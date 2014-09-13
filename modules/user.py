@@ -1,3 +1,4 @@
+from google.appengine.ext import db
 import jinja2
 import webapp2
 import urllib
@@ -6,6 +7,8 @@ import cgi
 import models
 import json
 from google.appengine.api import users
+from google.appengine.api import images
+from google.appengine.api import memcache
 from settings import JINJA_ENVIRONMENT
 
 # /manage
@@ -25,6 +28,8 @@ class Uploader(webapp2.RequestHandler):
         self.response.out.write("""
           <form action="/stream/image/upload?%s" enctype="multipart/form-data" method="post">
           <div><input type="file" name="img"/></div>
+          <div><input type="text" name="stream_id"/></div>
+          <div><input type="text" name="comments"/></div>
           <div><label>Avatar:</label></div>
             <div><input type="submit" value="Sign Guestbook"></div>
           </form>
@@ -36,28 +41,34 @@ class Uploader(webapp2.RequestHandler):
                     cgi.escape("cool")))
 
     def post(self):
-        greeting = Photo(title="yah")
+        if not users.get_current_user():
+            self.redirect("/")
 
-        if users.get_current_user():
-            greeting.author = users.get_current_user().nickname()
-        avatar = self.request.get('img')
-        greeting.full_size_image = db.Blob(avatar)
-        output = greeting.put()
-        self.response.out.write("Image upload success %s" % output)
+        if self.request.get('stream_id'):
+            stream = models.Stream.get_by_id(int(self.request.get('stream_id')))
+
+        if not stream:
+            self.response.out.write(json.dumps({"status" : "ERROR", "reason" : "No stream found"}))
+
+
+        photo = models.Photo(title=self.request.get("title","untitled image"))
+        image = self.request.get('img')
+        photo.full_size_image = db.Blob(image)
+        photo.stream = stream
+        photo.comments = self.request.get("comments","")
+        output = photo.put()
+        self.response.out.write(json.dumps({ "status" : "OK", "result" : "Image upload success %s" % output}))
 
 class Thumbnailer(webapp2.RequestHandler):
     def get(self):
         if self.request.get("id"):
-            photo = Photo.get_by_id(int(self.request.get("id")))
+            photo = models.Photo.get_by_id(int(self.request.get("id")))
 
             if photo:
-                img = images.Image(photo.full_size_image)
-                img.resize(width=80, height=100)
-                img.im_feeling_lucky()
-                thumbnail = img.execute_transforms(output_encoding=images.JPEG)
-
-                self.response.headers['Content-Type'] = 'image/jpeg'
-                self.response.out.write(thumbnail)
+                #import pdb; pdb.set_trace()
+                #img = images.get_serving_url(photo.full_size_image)
+                self.response.headers['Content-Type'] = 'image/png'
+                self.response.out.write(photo.full_size_image)
                 return
 
         # Either "id" wasn't provided, or there was no image with that ID
@@ -65,7 +76,7 @@ class Thumbnailer(webapp2.RequestHandler):
         self.error(404)
 
 class Create(webapp2.RequestHandler):
-    def get(self, is_json):
+    def get(self):
         if not users.get_current_user():
             self.redirect("/")
         else:
@@ -74,8 +85,7 @@ class Create(webapp2.RequestHandler):
             template_values = {'user' : users.get_current_user(), 'url' : url}
             self.response.write(template.render(template_values))
 
-    def post(self, is_json):
-        import pdb; pdb.set_trace()
+    def post(self):
         if not users.get_current_user():
             self.redirect("/")
         else:
@@ -90,18 +100,39 @@ class Create(webapp2.RequestHandler):
                                             "",
                                             "#cool")
 
-            if stream and is_json:
+            if stream:
                 self.response.out.write(json.dumps({"status" : "OK"}))
-            elif stream:
-                self.redirect("./manage")
             else:
                 self.response.out.write(json.dumps({"status" : "ERROR", "result" : result}))
 
 class View(webapp2.RequestHandler):
-    def get(self, is_json):
-        pass
+    def get(self):
+        if not users.get_current_user():
+            self.redirect("/")
+        else:
+            stream_id = self.request.get("id")
+            if stream_id:
+                stream = models.Stream.get_by_id(long(stream_id))
+                stream_photos = stream.get_images(limit=3)
+                photos = []
+                for photo in photos:
+                    photos.append(photo.__dict__())
+                self.response.out.write(json.dumps({"status" : "OK", "result" : photos }))
+            else:
+                self.response.out.write(json.dumps({"status" : "ERROR", "reason" : "No Stream Found" }))
 
 
 class ViewAll(webapp2.RequestHandler):
     def get(self):
-        import pdb; pdb.set_trace()
+        if not users.get_current_user():
+            self.redirect("/")
+        else:
+            user = models.User.get_user(users.get_current_user().user_id())
+            owned_streams = user.owned.fetch(limit=None)
+            user_streams = {}
+
+            user_streams["owned"] = []
+            for stream in owned_streams:
+                user_streams["owned"].append(stream.__dict__())
+
+            return self.response.out.write(json.dumps({"status" : "OK", "result" : user_streams}))
