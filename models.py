@@ -30,7 +30,6 @@ class Stream(db.Model):
     tags = db.StringListProperty()
 
     def __dict__(self):
-        import pdb; pdb.set_trace()
         return {
                 "id" : self.key().id(),
                 "name" : self.name,

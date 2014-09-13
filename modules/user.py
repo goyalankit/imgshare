@@ -136,3 +136,27 @@ class ViewAll(webapp2.RequestHandler):
                 user_streams["owned"].append(stream.__dict__())
 
             return self.response.out.write(json.dumps({"status" : "OK", "result" : user_streams}))
+
+class MainPage(webapp2.RequestHandler):
+    def get(self):
+        if users.get_current_user():
+            # create new user if it doens't exist
+            models.User.create_new_user(users.get_current_user().email(),
+                    users.get_current_user().user_id())
+            url = users.create_logout_url(self.request.uri)
+            url_linktext = 'Logout'
+            template = JINJA_ENVIRONMENT.get_template('templates/index.html')
+        else:
+            url = users.create_login_url(self.request.uri)
+
+            url_linktext = 'Login'
+            template = JINJA_ENVIRONMENT.get_template('templates/login.html')
+
+        template_values = {
+            'url': url,
+            'url_linktext': url_linktext,
+            'user' : users.get_current_user()
+        }
+
+        self.response.write(template.render(template_values))
+
