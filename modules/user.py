@@ -115,7 +115,7 @@ class View(webapp2.RequestHandler):
                 stream = models.Stream.get_by_id(long(stream_id))
                 stream_photos = stream.get_images(limit=3)
                 photos = []
-                for photo in photos:
+                for photo in stream_photos:
                     photos.append(photo.__dict__())
                 self.response.out.write(json.dumps({"status" : "OK", "result" : photos }))
             else:

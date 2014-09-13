@@ -90,3 +90,12 @@ class Photo(db.Model):
     title = db.StringProperty("title")
     stream = db.ReferenceProperty(Stream, collection_name="images")
     full_size_image = db.BlobProperty()
+
+    def __dict__(self):
+        return {
+                "id" : self.key().id(),
+                "url" : "./stream/image/get?id=%s" % self.key().id(),
+                "comments" : self.comments,
+                "stream_id" : self.stream.key().id()
+                }
+
