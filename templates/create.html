@@ -1,0 +1,54 @@
+{% include 'templates/header.html' %}
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+<script type="text/javascript" src="/js/jquery.tablesorter.js"></script> 
+
+
+<div class="container">
+
+    <output id="outputLog"></output>
+
+    <form id="formID" enctype='application/json' method="post">
+      <fieldset>
+        <legend>Create New Stream</legend>
+        <label>Name your stream *</label>
+        <input type="text" name="name" required placeholder="my awesome stream"><br/>
+        <label>Add subscribers</label>
+        <textarea rows="3" name="addsub"></textarea><br/>
+        <label>Tags</label>
+        <textarea rows="3" name="tags"></textarea><br/>
+        <label>Cover Image Url</label>
+        <input type="text" name="cover_image" placeholder="http://flickr.com/image.png"><br/>
+        <button type="submit" class="btn">Submit</button>
+      </fieldset>
+    </form>
+
+
+    <script>
+
+function ConvertFormToJSON(form){
+    var array = jQuery(form).serializeArray();
+    var json = {};
+
+    jQuery.each(array, function() {
+        json[this.name] = this.value || '';
+    });
+
+    return json;
+}
+
+$('#formID').on('submit',function () {
+    $.ajax({
+        url: '/create',
+        cache: false,
+        type: 'POST',
+        dataType: "json",
+        data : ConvertFormToJSON("#formID"),
+        success: function(json) {
+            alert('all done');
+        }
+    });
+});
+</script>
+</div>
+</body>
+</html>

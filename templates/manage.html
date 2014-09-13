@@ -1,0 +1,116 @@
+{% include 'templates/header.html' %}
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+<script type="text/javascript" src="/js/jquery.tablesorter.js"></script> 
+
+<link rel="stylesheet" type="text/css" href="css/style.css">
+
+<div class="container">
+
+    <output id="outputLog"></output>
+
+    <h2>Manage</h2>
+
+    <h3>Streams I own</h3>
+<table id="stream1" class="table table-bordered sort display data-table sort display tablesorter" >
+<thead>
+<tr>
+    <th>Name</th>
+    <th>Last New Picture</th>
+    <th>Number of Pictures</th>
+    <th>Delete</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+    <td>Smith</td>
+    <td>12.23.2014</td>
+    <td>23</td>
+    <td><input type="checkbox" name=que_1 value="0" /></td>
+</tr>
+<tr>
+    <td>Smith</td>
+    <td>12.23.2014</td>
+    <td>23</td>
+    <td><input type="checkbox" name=que_1 value="0" /></td>
+</tr>
+<tr>
+    <td>Doe</td>
+    <td>12.23.2014</td>
+    <td>23</td>
+    <td><input type="checkbox" name=que_1 value="0" /></td>
+</tr>
+<tr>
+    <td>Conway</td>
+    <td>12.23.2014</td>
+    <td>23</td>
+    <td><input type="checkbox" name=que_1 value="0" /></td>
+</tr>
+</tbody>
+</table>
+<button class="btn btn-danger" type="button">Delete Selected</button>
+
+<hr/>
+
+<h3>Streams I subscribe to</h3>
+<table id="stream2" class="table table-bordered sort display data-table sort display tablesorter" >
+<thead>
+<tr>
+    <th>Name</th>
+    <th>Last New Picture</th>
+    <th>Number of Pictures</th>
+    <th>Delete</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+    <td>Smith</td>
+    <td>12.23.2014</td>
+    <td>23</td>
+    <td><input type="checkbox" name=que_1 value="0" /></td>
+</tr>
+<tr>
+    <td>Smith</td>
+    <td>12.23.2014</td>
+    <td>23</td>
+    <td><input type="checkbox" name=que_1 value="0" /></td>
+</tr>
+<tr>
+    <td>Doe</td>
+    <td>12.23.2014</td>
+    <td>23</td>
+    <td><input type="checkbox" name=que_1 value="0" /></td>
+</tr>
+<tr>
+    <td>Conway</td>
+    <td>12.23.2014</td>
+    <td>23</td>
+    <td><input type="checkbox" name=que_1 value="0" /></td>
+</tr>
+</tbody>
+</table>
+<button class="btn btn-danger" type="button">Unsubscribe Selected</button>
+
+    <!--form onsubmit="return false">
+        <div><label for="id">Gmail UserId:</label><input id="id" /></div>
+        <div><input id="getGreeting" type="submit" class="btn btn-small" value="Submit"></div>
+    </form--!>
+<script>
+$(document).ready(function()
+    {
+        $("#stream1").tablesorter();
+        $("#stream2").tablesorter();
+    }
+);
+
+$(document).ready(function()
+    {
+        $("#stream1").tablesorter( {sortList: [[0,0], [1,0]]} );
+        $("#stream2").tablesorter( {sortList: [[0,0], [1,0]]} );
+    }
+);
+
+
+</script>
+</div>
+</body>
+</html>

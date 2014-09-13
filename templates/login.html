@@ -1,0 +1,22 @@
+{% include 'templates/header.html' %}
+<div class="container">
+
+    <output id="outputLog"></output>
+
+    <form action="/login">
+        <h2>Login and Share the world!</h2>
+        <div><label for="greeting">Username:</label><input id="username" /></div>
+        <div><label for="count">Password:</label><input id="password" type="password"/></div>
+        <div><input id="login" type="submit" class="btn btn-small" value="Submit"></div>
+    </form>
+
+    <b>OR</b>
+
+    use gmail
+   <a href="{{ url|safe }}">{{ url_linktext }}</a>
+ 
+    <!--<script src="https://apis.google.com/js/client.js?onload=init"></script>-->
+</div>
+</body>
+</html>
+
