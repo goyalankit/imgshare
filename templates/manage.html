@@ -21,30 +21,14 @@
 </tr>
 </thead>
 <tbody>
+{% for stream in streams["owned"] %}
 <tr>
-    <td>Smith</td>
-    <td>12.23.2014</td>
-    <td>23</td>
-    <td><input type="checkbox" name=que_1 value="0" /></td>
+  <td>{{stream["name"]}}</td>
+  <td>{{stream["updated_at"]}}</td>
+  <td>{{stream["count"]}}</td>
+    <td><input type="checkbox" name=que_1 value="{{stream['id']}}" /></td>
 </tr>
-<tr>
-    <td>Smith</td>
-    <td>12.23.2014</td>
-    <td>23</td>
-    <td><input type="checkbox" name=que_1 value="0" /></td>
-</tr>
-<tr>
-    <td>Doe</td>
-    <td>12.23.2014</td>
-    <td>23</td>
-    <td><input type="checkbox" name=que_1 value="0" /></td>
-</tr>
-<tr>
-    <td>Conway</td>
-    <td>12.23.2014</td>
-    <td>23</td>
-    <td><input type="checkbox" name=que_1 value="0" /></td>
-</tr>
+{% endfor %}
 </tbody>
 </table>
 <button class="btn btn-danger" type="button">Delete Selected</button>
@@ -58,34 +42,18 @@
     <th>Name</th>
     <th>Last New Picture</th>
     <th>Number of Pictures</th>
-    <th>Delete</th>
+    <th>Unsubscribe</th>
 </tr>
 </thead>
 <tbody>
+{% for stream in streams["subscribed"] %}
 <tr>
-    <td>Smith</td>
-    <td>12.23.2014</td>
-    <td>23</td>
-    <td><input type="checkbox" name=que_1 value="0" /></td>
+  <td>{{stream["name"]}}</td>
+  <td>{{stream["updated_at"]}}</td>
+  <td>{{stream["count"]}}</td>
+    <td><input type="checkbox" name=que_1 value="{{stream['id']}}" /></td>
 </tr>
-<tr>
-    <td>Smith</td>
-    <td>12.23.2014</td>
-    <td>23</td>
-    <td><input type="checkbox" name=que_1 value="0" /></td>
-</tr>
-<tr>
-    <td>Doe</td>
-    <td>12.23.2014</td>
-    <td>23</td>
-    <td><input type="checkbox" name=que_1 value="0" /></td>
-</tr>
-<tr>
-    <td>Conway</td>
-    <td>12.23.2014</td>
-    <td>23</td>
-    <td><input type="checkbox" name=que_1 value="0" /></td>
-</tr>
+{% endfor %}
 </tbody>
 </table>
 <button class="btn btn-danger" type="button">Unsubscribe Selected</button>
@@ -108,7 +76,6 @@ $(document).ready(function()
         $("#stream2").tablesorter( {sortList: [[0,0], [1,0]]} );
     }
 );
-
 
 </script>
 </div>

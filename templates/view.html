@@ -1,0 +1,35 @@
+<!DOCTYPE HTML>
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+	<title>Your website..</title>
+<link rel="stylesheet" href="/css/photobox.css">
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+<script src='/js/jquery.photobox.js'></script>
+</head>
+<body>
+    <div id='gallery'>
+    <a href="http://farm4.static.flickr.com/3882/15217941542_4473b99f02_b.jpg">
+        <img src="http://farm4.static.flickr.com/3882/15217941542_4473b99f02_b.jpg" title="photo1 title">
+    </a>
+    <a href="http://farm6.static.flickr.com/5577/15215830072_1c7d90c8ed_b.jpg">
+        <img src="http://farm6.static.flickr.com/5577/15215830072_1c7d90c8ed_b.jpg" alt="photo2 title">
+    </a>
+    <a href="http://farm4.static.flickr.com/3842/15218683905_39667f0f52_b.jpg">
+        <img src="http://farm4.static.flickr.com/3842/15218683905_39667f0f52_b.jpg" title="photo3 title">
+    </a>
+    <a href="http://farm6.static.flickr.com/5568/15218837715_923799717b_b.jpg">
+        <img src="http://farm6.static.flickr.com/5568/15218837715_923799717b_b.jpg" alt="photo4 title" data-pb-captionLink='Google website[www.google.com]'>
+    </a>
+</div>
+
+
+	<script>
+		$('#gallery').photobox('a');
+		// or with a fancier selector and some settings, and a callback:
+		$('#gallery').photobox('a:first', { thumbs:false, time:0 }, imageLoaded);
+		function imageLoaded(){
+			console.log('image has been loaded...');
+		}
+	</script>
+</body> 

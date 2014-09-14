@@ -19,6 +19,10 @@ class User(db.Model):
     def get_user(google_id):
         return User.gql("WHERE google_id = :1", google_id).get()
 
+    def subscribe(self, stream):
+        self.subscriptions.append(stream.key())
+        self.put()
+
 class Stream(db.Model):
     owner = db.ReferenceProperty(User,
                                  required=True,
@@ -36,11 +40,12 @@ class Stream(db.Model):
                 "created_at"  : self.created_at.strftime("%d/%m/%y"),
                 "updated_at" : self.updated_at.strftime("%d/%m/%y"),
                 "cover_image" : self.cover_image,
-                "tags" : self.tags
+                "tags" : self.tags,
+                "count" : self.images.count()
                 }
 
     # cursor can be used: https://developers.google.com/appengine/docs/python/datastore/queries#Python_Limitations_of_cursors
-    def get_images(self, limit, use_cursor=False, user=None):
+    def get_images(self, limit=None, use_cursor=False, user=None):
         if use_cursor:
             cursor = memcache.get("stream_images:cursor:%s" % user.google_id)
         if use_cursor and cursor:
@@ -80,7 +85,22 @@ class Stream(db.Model):
 
     @staticmethod
     def get_all_owned_streams(user):
-        return user.owned.get()
+        owned_streams = user.owned.fetch(limit=None)
+        user_streams = []
+        for stream in owned_streams:
+            user_streams.append(stream.__dict__())
+
+        return user_streams
+
+    @staticmethod
+    def get_all_subscribed_streams(user):
+        streams = user.subscriptions
+        subscribed_streams = []
+        for stream in streams:
+            subscribed_streams.append(db.get(stream).__dict__())
+
+        return subscribed_streams
+
 """
 PHOTO
 """
