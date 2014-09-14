@@ -95,7 +95,7 @@ class Create(webapp2.RequestHandler):
                 user = models.User(name="jon", email=google_user.email()).put()
 
             if self.request.get("name"):
-                stream, result = models.Stream.create_stream(self.request.get("name"),
+                stream, result = models.Stream.create_user_stream(self.request.get("name"),
                                             user,
                                             "",
                                             "#cool")

@@ -58,7 +58,7 @@ class Stream(db.Model):
         return json.dumps(self.__dict__())
 
     @staticmethod
-    def create_stream(name, user, cover_image, tags):
+    def create_user_stream(name, user, cover_image, tags):
         stream = Stream.gql("WHERE name = '%s'" % name).get()
         if not stream:
             stream = Stream(owner=user,
