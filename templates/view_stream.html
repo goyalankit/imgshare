@@ -1,47 +1,128 @@
 {% include 'templates/header.html' %}
-<link rel="stylesheet" href="/css/photobox.css">
+<link rel="stylesheet" href="/css/owl.carousel.css">
+<link rel="stylesheet" href="/css/owl.theme.css">
 <script src="//ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
-<script src='/js/jquery.photobox.js'></script>
+<script src="/js/owl.carousel.js"></script>
+<style>
+    #owl-demo .item{
+      margin: 3px;
+    }
+    #owl-demo .item img{
+      display: block;
+      width: 100%;
+      height: auto;
+    }
+    #owl-demo {
+      width: 100%;
+      margin-left: 0%;
+      margin-right: 5%;
+      margin-top: 7%;
+    }
+    #loadmore {
+      display: block;
+margin-left: 43%;
+margin-top: 1%;
+position: relative;
+    }
+    #main-box {
+      width: 60%;
+      float: left;
+      display: inline;
+    }
+
+    #info-box {
+      margin-top: 10%;
+    }
+    h1{
+	/* Using the custom font we've included in the HTML tab: */
+	    font-family: Satisfy, cursive;
+    	font-weight:bold;
+	    font-size:50px;
+	    padding-top: 60px;
+    }
+    ul#mylist {
+	    font-family: Satisfy, cursive;
+      color: grey;
+    	font-weight:bold;
+    	font-weight:dark;
+	    font-size:20px;
+      list-style-type: none;
+      margin-left: 5%;
+      margin-top: 10%;
+    }
+</style>
 <div class="container">
 
     <output id="outputLog"></output>
-
-    <h2>Manage</h2>
-
-    <div id='gallery'>
-    <a href="http://farm4.static.flickr.com/3882/15217941542_4473b99f02_b.jpg">
-        <img src="http://farm4.static.flickr.com/3882/15217941542_4473b99f02_b.jpg" title="photo1 title">
-    </a>
-    <a href="http://farm6.static.flickr.com/5577/15215830072_1c7d90c8ed_b.jpg">
-        <img src="http://farm6.static.flickr.com/5577/15215830072_1c7d90c8ed_b.jpg" alt="photo2 title">
-    </a>
-    <a href="http://farm4.static.flickr.com/3842/15218683905_39667f0f52_b.jpg">
-        <img src="http://farm4.static.flickr.com/3842/15218683905_39667f0f52_b.jpg" title="photo3 title">
-    </a>
-    <a href="http://farm6.static.flickr.com/5568/15218837715_923799717b_b.jpg">
-        <img src="http://farm6.static.flickr.com/5568/15218837715_923799717b_b.jpg" alt="photo4 title" data-pb-captionLink='Google website[www.google.com]'>
-    </a>
-</div>
-
+  <div id="main-box">
+    <div id="owl-demo" class="owl-carousel">
+        <div class="lazyOwl"><img src="http://farm4.static.flickr.com/3882/15217941542_4473b99f02_b.jpg" alt="Owl Image"></div>
+        <div class="lazyOwl"><img src="http://farm6.static.flickr.com/5568/15218837715_923799717b_b.jpg" alt="Owl Image"></div>
+        <div class="lazyOwl"><img src="http://farm4.static.flickr.com/3882/15217941542_4473b99f02_b.jpg" alt="Owl Image"></div>
+        <div class="lazyOwl"><img src="http://farm4.static.flickr.com/3882/15217941542_4473b99f02_b.jpg" alt="Owl Image"></div>
+        <div class="lazyOwl"><img src="http://farm4.static.flickr.com/3882/15217941542_4473b99f02_b.jpg" alt="Owl Image"></div>
+        <div class="lazyOwl"><img src="http://farm4.static.flickr.com/3882/15217941542_4473b99f02_b.jpg" alt="Owl Image"></div>
+        <div class="lazyOwl"><img src="http://farm6.static.flickr.com/5568/15218837715_923799717b_b.jpg" alt="Owl Image"></div>
+    </div>
+    <div id="loadmore">
+      <a href="" class="btn add btn-primary">Load More</a>
+    </div>
+  </div>
+    <div id="info-box" style="float: right">
+    <form id="formID" enctype='application/json' method="post">
+      <fieldset>
+        <legend>My Awesome Stream</legend>
+        <label>Upload</label>
+        <textarea rows="3" name="addsub"></textarea><br/>
+        <label>Tags</label>
+        <textarea rows="3" name="tags"></textarea><br/>
+        <label>Cover Image Url</label>
+        <input type="text" name="cover_image" placeholder="http://flickr.com/image.png"><br/>
+        <button type="submit" class="btn">Submit</button>
+      </fieldset>
+    </form>
+    </div>
 <script>
-    // applying photobox on a `gallery` element which has lots of thumbnails links. Passing options object as well:
-    //-----------------------------------------------
-    $('#gallery').photobox('a',{ time:0 });
+/* Documentation: http://owlgraphic.com/owlcarousel/demos/manipulations.html */
+  var owl = $("#owl-demo"),
+  i = 0,
 
-    // using a callback and a fancier selector
-    //----------------------------------------------
-    $('#gallery').photobox('li > a.family',{ time:0 }, callback);
-    function callback(){
-       console.log('image has been loaded');
-    }
+  textholder,
+  booleanValue = false;
 
-    // destroy the plugin on a certain gallery:
-    //-----------------------------------------------
-    $('#gallery').photobox('destroy');
+  //init carousel
+    owl.owlCarousel({
+        lazyLoad : true,
+         autoPlay : 3000,
+        stopOnHover : true,
+      navigation:true,
+      paginationSpeed : 1000,
+      goToFirstSpeed : 2000,
+      rewindNav : true,
+      items : 2,
+       singleItem : true,
+      autoHeight : true
+    });
 
-    // re-initialize the photbox DOM (does what Document ready does)
-    //-----------------------------------------------
-    $('#gallery').photobox('prepareDOM');
+  /*
+  addItem() method add new slides on given position
+
+  Syntax:
+  owldata.addItem(htmlString, targetPosition)
+
+  First parameter(mandatory) "htmlString" accept string like this:
+  var newItem = "<div>new Item</div>"
+  Second parameter "targetPosition" is optional and accept number values.
+  To add item at the end of carousel you could use -1 value. Last item is default value.
+  */
+  $('.add').on("click", function(e){
+  e.preventDefault();
+  i += 1;
+  var content = "<div class=\"lazyowl\"><img src=\"http://farm4.static.flickr.com/3882/15217941542_4473b99f02_b.jpg\" alt=\"Owl Image\"></div>";
+
+  owl.data('owlCarousel').addItem(content);
+});
+
 </script>
 </div>
 </body>

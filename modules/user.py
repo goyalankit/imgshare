@@ -144,14 +144,24 @@ class View(webapp2.RequestHandler):
 
 
 class ViewAll(webapp2.RequestHandler):
-    def get(self):
+    def get(self, format):
         if not users.get_current_user():
             self.redirect("/")
         else:
             user = models.User.get_user(users.get_current_user().user_id())
-            user_streams = models.Stream.get_all_owned_streams(user)
+            user_streams = {}
+            user_streams["owned"] = models.Stream.get_all_owned_streams(user)
+            user_streams["subscribed"] = models.Stream.get_all_subscribed_streams(user)
+            url = users.create_logout_url(self.request.uri)
+            template_values = {'user' : users.get_current_user(), 'url' : url}
+            template_values['user_streams'] = user_streams
 
-            return self.response.out.write(json.dumps({"status" : "OK", "result" : user_streams}))
+            if format.find('json') > 0:
+                return self.response.out.write(json.dumps({"status" : "OK", "result" : user_streams}))
+            else:
+                template = JINJA_ENVIRONMENT.get_template('templates/view.html')
+                self.response.write(template.render(template_values))
+
 
 class MainPage(webapp2.RequestHandler):
     def get(self):

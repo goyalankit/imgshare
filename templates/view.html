@@ -1,35 +1,81 @@
-<!DOCTYPE HTML>
-<html lang="en">
-<head>
-	<meta charset="utf-8">
-	<title>Your website..</title>
-<link rel="stylesheet" href="/css/photobox.css">
+{% include 'templates/header.html' %}
+<link rel="stylesheet" href="/css/owl.carousel.css">
+<link rel="stylesheet" href="/css/owl.theme.css">
 <script src="//ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
-<script src='/js/jquery.photobox.js'></script>
-</head>
-<body>
-    <div id='gallery'>
-    <a href="http://farm4.static.flickr.com/3882/15217941542_4473b99f02_b.jpg">
-        <img src="http://farm4.static.flickr.com/3882/15217941542_4473b99f02_b.jpg" title="photo1 title">
-    </a>
-    <a href="http://farm6.static.flickr.com/5577/15215830072_1c7d90c8ed_b.jpg">
-        <img src="http://farm6.static.flickr.com/5577/15215830072_1c7d90c8ed_b.jpg" alt="photo2 title">
-    </a>
-    <a href="http://farm4.static.flickr.com/3842/15218683905_39667f0f52_b.jpg">
-        <img src="http://farm4.static.flickr.com/3842/15218683905_39667f0f52_b.jpg" title="photo3 title">
-    </a>
-    <a href="http://farm6.static.flickr.com/5568/15218837715_923799717b_b.jpg">
-        <img src="http://farm6.static.flickr.com/5568/15218837715_923799717b_b.jpg" alt="photo4 title" data-pb-captionLink='Google website[www.google.com]'>
-    </a>
+<script src="/js/owl.carousel.js"></script>
+<style>
+.gallery-item {
+  width: 350px;
+  margin: 5px;
+}
+
+a:hover .galley-item {
+  opacity: 5%;
+}
+
+.gallery-item {
+  display: block;
+  float: left;
+}
+</style>
+<div class="container">
+
+    <output id="outputLog"></output>
+
+    <h2 style="color: grey; margin-left: 15%">All Streams</h2>
+    {% if user_streams %}
+      <div id="gallery" class="mygal">
+      {% for stream_type in user_streams %}
+        {% for stream in user_streams[stream_type] %}
+        <div class="gallery-item">
+          <a href="./stream/view?id={{stream['id']}}"><img src="{{stream['cover_image'] or 'http://farm4.static.flickr.com/3882/15217941542_4473b99f02_b.jpg' }}" onerror="this.src='http://farm4.static.flickr.com/3882/15217941542_4473b99f02_b.jpg'"></a>
+          <b>{{stream['name']}}</b>
+        </div>
+        {% endfor %}
+      {% endfor %}
+    {% endif %}
+    </div>
+<!--script>
+/* Documentation: http://owlgraphic.com/owlcarousel/demos/manipulations.html */
+
+  var owl = $("#owl-demo"),
+  i = 0,
+
+  textholder,
+  booleanValue = false;
+
+  //init carousel
+    owl.owlCarousel({
+        stopOnHover : true,
+      navigation:true,
+      paginationSpeed : 1000,
+      goToFirstSpeed : 2000,
+      rewindNav : true,
+      items : 3,
+//       singleItem : true,
+      autoHeight : true
+    });
+
+  /*
+  addItem() method add new slides on given position
+
+  Syntax:
+  owldata.addItem(htmlString, targetPosition)
+
+  First parameter(mandatory) "htmlString" accept string like this:
+  var newItem = "<div>new Item</div>"
+  Second parameter "targetPosition" is optional and accept number values.
+  To add item at the end of carousel you could use -1 value. Last item is default value.
+  */
+  $('.add').on("click", function(e){
+  e.preventDefault();
+  i += 1;
+  var content = "<div class=\"lazyowl\"><img src=\"http://farm4.static.flickr.com/3882/15217941542_4473b99f02_b.jpg\" alt=\"Owl Image\"></div>";
+
+  owl.data('owlCarousel').addItem(content);
+});
+
+</script-->
 </div>
-
-
-	<script>
-		$('#gallery').photobox('a');
-		// or with a fancier selector and some settings, and a callback:
-		$('#gallery').photobox('a:first', { thumbs:false, time:0 }, imageLoaded);
-		function imageLoaded(){
-			console.log('image has been loaded...');
-		}
-	</script>
-</body> 
+</body>
+</html>
