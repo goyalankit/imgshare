@@ -6,6 +6,8 @@ import datetime
 import cgi
 import models
 import json
+from google.appengine.ext.webapp import blobstore_handlers
+from google.appengine.ext import blobstore
 from google.appengine.api import users
 from google.appengine.api import images
 from google.appengine.api import memcache
@@ -31,28 +33,51 @@ class Manage(webapp2.RequestHandler):
             streams["subscribed"] = models.Stream.get_all_subscribed_streams(user)
 
             if format.find('json') > 0:
+                self.response.headers.add_header("Content-Type", "application/json")
                 self.response.write(json.dumps({"status" : "OK", "result" : streams}))
             else:
                 template = JINJA_ENVIRONMENT.get_template('templates/manage.html')
                 template_values["streams"] = streams
                 self.response.write(template.render(template_values))
 
+
+class UploadHandler(blobstore_handlers.BlobstoreUploadHandler):
+    def post(self):
+        if not users.get_current_user():
+            self.redirect("/")
+
+        if self.request.get('stream_id'):
+            stream = models.Stream.get_by_id(int(self.request.get('stream_id')))
+
+        if not stream:
+            self.response.out.write(json.dumps({"status" : "ERROR", "reason" : "No stream found"}))
+
+        upload_files = self.get_uploads('file')  # 'file' is file upload field in the form
+        blob_info = upload_files[0]
+
+        photo = models.Photo(title=self.request.get("title","untitled image"), blob_key = blob_info)
+        photo.stream = stream
+        photo.comments = self.request.get("comments","")
+        photo.put()
+
+        self.response.out.write(json.dumps({"status" : "OK", "result" : "image upload success"}))
+
+
+
+class ServeHandler(blobstore_handlers.BlobstoreDownloadHandler):
+    def get(self, resource):
+        resource = str(urllib.unquote(resource))
+        blob_info = blobstore.BlobInfo.get(resource)
+        self.send_blob(blob_info)
+
 class Uploader(webapp2.RequestHandler):
     def get(self):
-        self.response.out.write("""
-          <form action="/stream/image/upload?%s" enctype="multipart/form-data" method="post">
-          <div><input type="file" name="img"/></div>
-          <div><input type="text" name="stream_id"/></div>
-          <div><input type="text" name="comments"/></div>
-          <div><label>Avatar:</label></div>
-            <div><input type="submit" value="Sign Guestbook"></div>
-          </form>
-          <hr>
-          <form>Guestbook name: <input value="%s" name="guestbook_name">
-          <input type="submit" value="switch"></form>
-        </body>
-      </html>""" % (urllib.urlencode({'guestbook_name': "cool"}),
-                    cgi.escape("cool")))
+        upload_url = blobstore.create_upload_url('/upload')
+        self.response.out.write('<html><body>')
+        self.response.out.write('<form action="%s" method="POST" enctype="multipart/form-data">' % upload_url)
+        self.response.out.write("""Upload File: <input type="file" name="file"><br> <input "type"="text" name="stream_id"><br/>
+        <input type="submit"
+        name="submit" value="Submit"></form></body></html>""")
 
     def post(self):
         if not users.get_current_user():
@@ -75,11 +100,11 @@ class Uploader(webapp2.RequestHandler):
 
 class Thumbnailer(webapp2.RequestHandler):
     def get(self):
+        import pdb; pdb.set_trace()
         if self.request.get("id"):
             photo = models.Photo.get_by_id(int(self.request.get("id")))
 
             if photo:
-                #import pdb; pdb.set_trace()
                 #img = images.get_serving_url(photo.full_size_image)
                 self.response.headers['Content-Type'] = 'image/png'
                 self.response.out.write(photo.full_size_image)
@@ -120,7 +145,7 @@ class Create(webapp2.RequestHandler):
                 self.response.out.write(json.dumps({"status" : "ERROR", "result" : result}))
 
 class View(webapp2.RequestHandler):
-    def get(self):
+    def get(self, format):
         if not users.get_current_user():
             self.redirect("/")
         else:
@@ -135,10 +160,15 @@ class View(webapp2.RequestHandler):
                     photos.append(photo.__dict__())
                 url = users.create_logout_url(self.request.uri)
                 template_values = {'user' : users.get_current_user(), 'url' : url}
+                template_values['photos'] = photos
+                template_values['stream'] = stream
 
-               #self.response.out.write(json.dumps({"status" : "OK", "result" : photos }))
-                template = JINJA_ENVIRONMENT.get_template('templates/view_stream.html')
-                self.response.write(template.render(template_values))
+                if format.find('json') > 0:
+                    self.response.headers.add_header("Content-Type", "application/json")
+                    self.response.out.write(json.dumps({"status" : "OK", "result" : photos }))
+                else:
+                    template = JINJA_ENVIRONMENT.get_template('templates/view_stream.html')
+                    self.response.write(template.render(template_values))
             else:
                 self.response.out.write(json.dumps({"status" : "ERROR", "reason" : "No Stream Found" }))
 
@@ -157,6 +187,7 @@ class ViewAll(webapp2.RequestHandler):
             template_values['user_streams'] = user_streams
 
             if format.find('json') > 0:
+                self.response.headers.add_header("Content-Type", "application/json")
                 return self.response.out.write(json.dumps({"status" : "OK", "result" : user_streams}))
             else:
                 template = JINJA_ENVIRONMENT.get_template('templates/view.html')

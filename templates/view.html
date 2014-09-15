@@ -1,40 +1,218 @@
 {% include 'templates/header.html' %}
-<link rel="stylesheet" href="/css/owl.carousel.css">
-<link rel="stylesheet" href="/css/owl.theme.css">
-<script src="//ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
-<script src="/js/owl.carousel.js"></script>
-<style>
-.gallery-item {
-  width: 350px;
-  margin: 5px;
+
+
+<style type="text/css">
+
+@font-face {
+  font-family: 'Vollkorn';
+  font-style: normal;
+  font-weight: 400;
+  src: local('Vollkorn Regular'), local('Vollkorn-Regular'), url(http://fonts.gstatic.com/s/vollkorn/v6/BCFBp4rt5gxxFrX6F12DKnYhjbSpvc47ee6xR_80Hnw.woff) format('woff');
 }
 
-a:hover .galley-item {
-  opacity: 5%;
+
+
+body {
+}
+h1 {
+font-family: Vollkorn;
+	font-size: 4em;
+	font-weight: 400;
+	margin: 0 0 20px;
+	text-align: center;
+	text-shadow: 1px 1px 0 #fff, 2px 2px 0 #bbb;
 }
 
-.gallery-item {
-  display: block;
-  float: left;
+h3 {
+  font-family: Vollkorn;
+}
+
+hr {
+	border-top: 1px solid #ccc;
+	border-bottom: 1px solid #fff;
+	margin: 25px 0;
+	clear: both;
+}
+.centered {
+	text-align: center;
+}
+.wrapper {
+	width: 100%;
+	padding: 30px 0;
+}
+.container {
+	width: 1200px;
+	margin: 0 auto;
+}
+ul.grid-nav {
+	list-style: none;
+	font-size: .85em;
+	font-weight: 200;
+	text-align: center;
+}
+ul.grid-nav li {
+	display: inline-block;
+}
+ul.grid-nav li a {
+	display: inline-block;
+	background: #999;
+	color: #fff;
+	padding: 10px 20px;
+	text-decoration: none;
+	border-radius: 4px;
+	-moz-border-radius: 4px;
+	-webkit-border-radius: 4px;
+}
+ul.grid-nav li a:hover {
+	background: #7b0;
+}
+ul.grid-nav li a.active {
+	background: #333;
+}
+.grid-container {
+  margin-top:5%;
+/*	display: none; */
+}
+/* ----- Image grids ----- */
+ul.rig {
+	list-style: none;
+	font-size: 0px;
+	margin-left: -2.5%; /* should match li left margin */
+}
+ul.rig li {
+	display: inline-block;
+	padding: 10px;
+	margin: 0 0 2.5% 2.5%;
+	background: #fff;
+	border: 1px solid #ddd;
+	font-size: 16px;
+	font-size: 1rem;
+	vertical-align: top;
+	box-shadow: 0 0 5px #ddd;
+	box-sizing: border-box;
+	-moz-box-sizing: border-box;
+	-webkit-box-sizing: border-box;
+}
+ul.rig li img {
+	max-width: 100%;
+/*	height: auto; */  /* might effect responsiveness */
+  height: 156px;
+	margin: 0 0 10px;
+}
+ul.rig li h3 {
+	margin: 0 0 5px;
+}
+ul.rig li p {
+	font-size: .9em;
+	line-height: 1.5em;
+	color: #999;
+}
+/* class for 2 columns */
+ul.rig.columns-2 li {
+	width: 47.5%; /* this value + 2.5 should = 50% */
+}
+/* class for 3 columns */
+ul.rig.columns-3 li {
+	width: 30.83%; /* this value + 2.5 should = 33% */
+}
+/* class for 4 columns */
+ul.rig.columns-4 li {
+	width: 22.5%; /* this value + 2.5 should = 25% */
+}
+
+@media (max-width: 1199px) {
+	.container {
+		width: auto;
+		padding: 0 10px;
+	}
+}
+
+@media (max-width: 480px) {
+	ul.grid-nav li {
+		display: block;
+		margin: 0 0 5px;
+	}
+	ul.grid-nav li a {
+		display: block;
+	}
+	ul.rig {
+		margin-left: 0;
+	}
+	ul.rig li {
+		width: 100% !important; /* over-ride all li styles */
+		margin: 0 0 20px;
+	}
+}
+
+li a:hover img {
+ opacity: 0.4;
+ filter: alpha(opacity=40);
+}
+
+li a:hover li {
+  background-color: black;
+}
+
+li a:hover a{
+  text-decoration: none;
+  color: black;
+}
+
+ul li h3 {
+  color: #737373;
 }
 </style>
+
+
 <div class="container">
 
     <output id="outputLog"></output>
 
-    <h2 style="color: grey; margin-left: 15%">All Streams</h2>
+    
+    <h2 style="margin-top: 3%; color: grey;">your streams</h2>
+    <hr/>
+		<div id="four-columns" class="grid-container">
+			<ul class="rig columns-4">
     {% if user_streams %}
-      <div id="gallery" class="mygal">
       {% for stream_type in user_streams %}
         {% for stream in user_streams[stream_type] %}
-        <div class="gallery-item">
-          <a href="./stream/view?id={{stream['id']}}"><img src="{{stream['cover_image'] or 'http://farm4.static.flickr.com/3882/15217941542_4473b99f02_b.jpg' }}" onerror="this.src='http://farm4.static.flickr.com/3882/15217941542_4473b99f02_b.jpg'"></a>
-          <b>{{stream['name']}}</b>
-        </div>
+				<li>
+        <a href="./stream/view?id={{stream['id']}}" style="text-decoration: none;">
+					<img class="gl-img" src="{{stream['cover_image'] or 'http://farm4.static.flickr.com/3882/15217941542_4473b99f02_b.jpg' }}" onerror="this.src='http://farm4.static.flickr.com/3882/15217941542_4473b99f02_b.jpg'" />
+          <!--<a href="./stream/view?id={{stream['id']}}"><img src="" onerror="this.src='http://farm4.static.flickr.com/3882/15217941542_4473b99f02_b.jpg'"></a>-->
+          <h3>{{stream['name']}}</h3>
+          <p> {{stream['comments']}} </p>
+        </a>
+        {% if stream_type == 'owned' %}
+          <span class="label label-success">{{stream_type}}</span>
+        {% else %}
+          <span class="label label-warning">{{stream_type}}</span>
+        {% endif %}
+				</li>
         {% endfor %}
       {% endfor %}
     {% endif %}
+			</ul>
     </div>
+
+
+
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js" type="text/javascript"></script>
+<script type="text/javascript">
+$(document).ready(function() {
+	$('.grid-nav li a').on('click', function(event){
+		event.preventDefault();
+		$('.grid-container').fadeOut(500, function(){
+			$('#' + gridID).fadeIn(500);
+		});
+		var gridID = $(this).attr("data-id");
+		
+		$('.grid-nav li a').removeClass("active");
+		$(this).addClass("active");
+	});
+});
+</script>
+
 <!--script>
 /* Documentation: http://owlgraphic.com/owlcarousel/demos/manipulations.html */
 

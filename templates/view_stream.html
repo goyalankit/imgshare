@@ -4,8 +4,14 @@
 <script src="//ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
 <script src="/js/owl.carousel.js"></script>
 <style>
+    body {
+      background-color: white;
+    }
     #owl-demo .item{
       margin: 3px;
+    }
+    .owl-item {
+      text-align: center;
     }
     #owl-demo .item img{
       display: block;
@@ -20,9 +26,9 @@
     }
     #loadmore {
       display: block;
-margin-left: 43%;
-margin-top: 1%;
-position: relative;
+      margin-left: 43%;
+      margin-top: 1%;
+      position: relative;
     }
     #main-box {
       width: 60%;
@@ -56,28 +62,22 @@ position: relative;
     <output id="outputLog"></output>
   <div id="main-box">
     <div id="owl-demo" class="owl-carousel">
-        <div class="lazyOwl"><img src="http://farm4.static.flickr.com/3882/15217941542_4473b99f02_b.jpg" alt="Owl Image"></div>
-        <div class="lazyOwl"><img src="http://farm6.static.flickr.com/5568/15218837715_923799717b_b.jpg" alt="Owl Image"></div>
-        <div class="lazyOwl"><img src="http://farm4.static.flickr.com/3882/15217941542_4473b99f02_b.jpg" alt="Owl Image"></div>
-        <div class="lazyOwl"><img src="http://farm4.static.flickr.com/3882/15217941542_4473b99f02_b.jpg" alt="Owl Image"></div>
-        <div class="lazyOwl"><img src="http://farm4.static.flickr.com/3882/15217941542_4473b99f02_b.jpg" alt="Owl Image"></div>
-        <div class="lazyOwl"><img src="http://farm4.static.flickr.com/3882/15217941542_4473b99f02_b.jpg" alt="Owl Image"></div>
-        <div class="lazyOwl"><img src="http://farm6.static.flickr.com/5568/15218837715_923799717b_b.jpg" alt="Owl Image"></div>
+      {% for photo in photos %}
+      <div class="lazyOwl"><img src="{{photo}}" alt="Owl Image"></div>
+        {% endfor %}
     </div>
     <div id="loadmore">
       <a href="" class="btn add btn-primary">Load More</a>
     </div>
   </div>
+  <div id="streamid" style="display:none;">{{stream.key().id()}} </div>
     <div id="info-box" style="float: right">
     <form id="formID" enctype='application/json' method="post">
       <fieldset>
         <legend>My Awesome Stream</legend>
         <label>Upload</label>
-        <textarea rows="3" name="addsub"></textarea><br/>
-        <label>Tags</label>
-        <textarea rows="3" name="tags"></textarea><br/>
-        <label>Cover Image Url</label>
-        <input type="text" name="cover_image" placeholder="http://flickr.com/image.png"><br/>
+        <div><input type="file" name="img"/></div>
+        <input type="textarea" name="comments" placeholder="give me some sweet comments.."><br/>
         <button type="submit" class="btn">Submit</button>
       </fieldset>
     </form>

@@ -1,4 +1,6 @@
 from google.appengine.ext import db
+from google.appengine.ext import blobstore
+from google.appengine.api import images
 import json
 
 class User(db.Model):
@@ -108,12 +110,14 @@ class Photo(db.Model):
     comments = db.StringProperty("comments")
     title = db.StringProperty("title")
     stream = db.ReferenceProperty(Stream, collection_name="images")
-    full_size_image = db.BlobProperty()
+    blob_key = blobstore.BlobReferenceProperty()
 
-    def __dict__(self):
+    def __dict__(self, resize=None):
+        if resize:
+            url = images.get_serving_url(self.blob_key) + ('=s%s' % resize)
         return {
                 "id" : self.key().id(),
-                "url" : "./stream/image/get?id=%s" % self.key().id(),
+                "url" : images.get_serving_url(self.blob_key),
                 "comments" : self.comments,
                 "stream_id" : self.stream.key().id()
                 }
