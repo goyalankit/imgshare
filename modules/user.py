@@ -11,6 +11,7 @@ from google.appengine.ext import blobstore
 from google.appengine.api import users
 from google.appengine.api import images
 from google.appengine.api import memcache
+from google.appengine.api import mail
 from settings import JINJA_ENVIRONMENT
 
 DEFAULT_IMAGES = [
@@ -22,7 +23,10 @@ DEFAULT_IMAGES = [
 class Manage(webapp2.RequestHandler):
     def get(self, format):
         if not users.get_current_user():
-            self.redirect("/")
+            if format.find('json') > 0:
+                self.error(401)
+            else:
+                self.redirect("/")
         else:
             url = users.create_logout_url(self.request.uri)
             template_values = {'user' : users.get_current_user(), 'url' : url}
@@ -38,11 +42,29 @@ class Manage(webapp2.RequestHandler):
             else:
                 template = JINJA_ENVIRONMENT.get_template('templates/manage.html')
                 template_values["streams"] = streams
+                #self.respose.set_status(200);
                 self.response.write(template.render(template_values))
 
 
-class UploadHandler(blobstore_handlers.BlobstoreUploadHandler):
+class DeleteStream(webapp2.RequestHandler):
     def post(self):
+        if not users.get_current_user():
+            self.redirect("/")
+        else:
+            if (self.request.get('stream_ids')):
+                streams = [int(stream) for stream in self.request.get('stream_ids').split(',')]
+
+                list_of_streams = models.Stream.get_by_id(streams);
+
+                for stream in list_of_streams:
+                    db.delete(stream.key())
+                self.response.out.write(json.dumps({"status" : "OK", "result" : "delete successful"}))
+
+            self.response.out.write(json.dumps({"status": "ERROR", "reason" : "Streams not found"}))
+
+
+class UploadHandler(blobstore_handlers.BlobstoreUploadHandler):
+    def post(self, format):
         if not users.get_current_user():
             self.redirect("/")
 
@@ -59,8 +81,10 @@ class UploadHandler(blobstore_handlers.BlobstoreUploadHandler):
         photo.stream = stream
         photo.comments = self.request.get("comments","")
         photo.put()
-
-        self.response.out.write(json.dumps({"status" : "OK", "result" : "image upload success"}))
+        if 'json' in format:
+            self.response.out.write(json.dumps({"status" : "OK", "result" : "image upload success"}))
+        else:
+            self.redirect('./stream/view?id=' + self.request.get('stream_id') + '&upload=successful')
 
 
 
@@ -72,7 +96,7 @@ class ServeHandler(blobstore_handlers.BlobstoreDownloadHandler):
 
 class Uploader(webapp2.RequestHandler):
     def get(self):
-        upload_url = blobstore.create_upload_url('/upload')
+        upload_url = blobstore.create_upload_url('/upload.html')
         self.response.out.write('<html><body>')
         self.response.out.write('<form action="%s" method="POST" enctype="multipart/form-data">' % upload_url)
         self.response.out.write("""Upload File: <input type="file" name="file"><br> <input "type"="text" name="stream_id"><br/>
@@ -100,7 +124,6 @@ class Uploader(webapp2.RequestHandler):
 
 class Thumbnailer(webapp2.RequestHandler):
     def get(self):
-        import pdb; pdb.set_trace()
         if self.request.get("id"):
             photo = models.Photo.get_by_id(int(self.request.get("id")))
 
@@ -115,7 +138,7 @@ class Thumbnailer(webapp2.RequestHandler):
         self.error(404)
 
 class Create(webapp2.RequestHandler):
-    def get(self):
+    def get(self, format):
         if not users.get_current_user():
             self.redirect("/")
         else:
@@ -124,7 +147,7 @@ class Create(webapp2.RequestHandler):
             template_values = {'user' : users.get_current_user(), 'url' : url}
             self.response.write(template.render(template_values))
 
-    def post(self):
+    def post(self, format):
         if not users.get_current_user():
             self.redirect("/")
         else:
@@ -138,9 +161,11 @@ class Create(webapp2.RequestHandler):
                                             user,
                                             self.request.get("cover_image", DEFAULT_IMAGES[0]),
                                             self.request.get("tags", ""))
-
             if stream:
-                self.response.out.write(json.dumps({"status" : "OK"}))
+                if 'json' in format:
+                    self.response.out.write(json.dumps({"status" : "OK"}))
+                else:
+                    self.redirect('/manage?refresh=true')
             else:
                 self.response.out.write(json.dumps({"status" : "ERROR", "result" : result}))
 
@@ -154,14 +179,29 @@ class View(webapp2.RequestHandler):
                 stream = models.Stream.get_by_id(long(stream_id))
                 if not stream:
                     self.response.out.write(json.dumps({"status" : "ERROR", "reason" : "No Stream Found" }))
-                stream_photos = stream.get_images(limit=3)
+
+                get_more = self.request.get("get_more");
+
+
+                user = models.User.get_user(users.get_current_user().user_id())
+
+                if get_more:
+                    stream_photos = stream.get_images(limit=3, useCursor=True, user=user)
+                else:
+                    stream_photos = stream.get_images(limit=3, useCursor=True, user=user, resetCursor=True)
                 photos = []
                 for photo in stream_photos:
                     photos.append(photo.__dict__())
                 url = users.create_logout_url(self.request.uri)
+                stream.update_view_count()
+
                 template_values = {'user' : users.get_current_user(), 'url' : url}
                 template_values['photos'] = photos
                 template_values['stream'] = stream
+                template_values['upload_url'] = blobstore.create_upload_url('/upload')
+                template_values['owner'] = stream.owner.google_id == user.google_id
+                template_values['subscribed'] = [True for st in models.Stream.get_all_subscribed_streams(user) if stream.key().id() == st['id']] != []
+                template_values['upload'] = self.request.get("upload",'')
 
                 if format.find('json') > 0:
                     self.response.headers.add_header("Content-Type", "application/json")
@@ -171,7 +211,6 @@ class View(webapp2.RequestHandler):
                     self.response.write(template.render(template_values))
             else:
                 self.response.out.write(json.dumps({"status" : "ERROR", "reason" : "No Stream Found" }))
-
 
 class ViewAll(webapp2.RequestHandler):
     def get(self, format):
@@ -224,7 +263,6 @@ class Ping(webapp2.RequestHandler):
             self.redirect("/")
 
         stream = models.Stream.get_by_id(int(self.request.get("stream_id")))
-        import pdb; pdb.set_trace()
         images = stream.get_images()
 
 
@@ -233,13 +271,87 @@ class Subscribe(webapp2.RequestHandler):
         if not users.get_current_user():
             self.redirect("/")
         user = models.User.get_user(users.get_current_user().user_id())
-        params = json.loads(self.request.body)
 
-        stream = models.Stream.get_by_id(int(params["stream_id"]))
+        if not (self.request.get('stream_id')):
+            return self.response.write(json.dumps({"status" : "ERROR", "reason" : "Stream not found"}))
+
+        stream = models.Stream.get_by_id(int(self.request.get('stream_id')))
+
         if not stream:
             return self.response.write(json.dumps({"status" : "ERROR", "reason" : "Stream not found"}))
 
         user.subscribe(stream)
         return self.response.write(json.dumps({"status" : "OK", "result" : "Subscribed to Stream"}))
 
+class UnSubscribe(webapp2.RequestHandler):
+    def post(self, format):
+        if not users.get_current_user():
+            self.redirect("/")
+        user = models.User.get_user(users.get_current_user().user_id())
+
+        if not (self.request.get('stream_ids')):
+            return self.response.write(json.dumps({"status" : "ERROR", "reason" : "Stream not found"}))
+
+        streams = [int(stream) for stream in self.request.get('stream_ids').split(',')]
+
+        stream_obj_list = models.Stream.get_by_id(streams)
+
+        if not stream_obj_list:
+            return self.response.write(json.dumps({"status" : "ERROR", "reason" : "Stream not found"}))
+
+        for stream in stream_obj_list:
+            user.unsubscribe(stream)
+
+        return self.response.write(json.dumps({"status" : "OK", "result" : "UnSubscribed Successfully"}))
+
+class Search(webapp2.RequestHandler):
+    def get(self, format):
+        if not users.get_current_user():
+            self.redirect("/")
+        user = models.User.get_user(users.get_current_user().user_id())
+        url = users.create_logout_url(self.request.uri)
+        template_values = {'user' : users.get_current_user(), 'url' : url}
+
+        if not self.request.get('name'):
+            if format.find('json') > 0:
+                self.response.headers.add_header("Content-Type", "application/json")
+                # may be send latest
+                self.response.out.write(json.dumps({"status" : "OK", "result" : [] }))
+                return
+            else:
+                template = JINJA_ENVIRONMENT.get_template('templates/search.html')
+                self.response.write(template.render(template_values))
+                return
+
+        # if q is present
+        streams = models.Search.find_by_keyword(self.request.get('name'));
+
+        self.response.write(json.dumps({"status" : "OK", "result" : streams}))
+
+class Mailer(webapp2.RequestHandler):
+    def get(self, format):
+        message = mail.EmailMessage(sender="ankit3goyal@gmail.com",
+                            subject="Your account has been approved")
+
+        message.to = "me@goyalankit.com"
+        template = JINJA_ENVIRONMENT.get_template('templates/newsletter.html')
+        template_values = {}
+        message.html = template.render(template_values)
+
+        message.send()
+
+class Social(webapp2.RequestHandler):
+    def get(self, format):
+        user = models.User.get_user(users.get_current_user().user_id())
+        url = users.create_logout_url(self.request.uri)
+        template_values = {'user' : users.get_current_user(), 'url' : url}
+
+        if format.find('json') > 0:
+            self.response.headers.add_header("Content-Type", "application/json")
+            # may be send latest
+            self.response.out.write(json.dumps({"status" : "OK", "result" : ['stream1', 'stream2'] }))
+            return
+        else:
+            template = JINJA_ENVIRONMENT.get_template('templates/social.html')
+            self.response.write(template.render(template_values))
 

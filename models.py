@@ -1,6 +1,8 @@
 from google.appengine.ext import db
 from google.appengine.ext import blobstore
+from google.appengine.api import memcache
 from google.appengine.api import images
+from google.appengine.api import search
 import json
 
 class User(db.Model):
@@ -25,6 +27,11 @@ class User(db.Model):
         self.subscriptions.append(stream.key())
         self.put()
 
+    def unsubscribe(self, stream):
+        if stream.key() in self.subscriptions:
+            self.subscriptions.remove(stream.key())
+        self.put()
+
 class Stream(db.Model):
     owner = db.ReferenceProperty(User,
                                  required=True,
@@ -34,6 +41,7 @@ class Stream(db.Model):
     created_at = db.DateTimeProperty(auto_now_add=True)
     cover_image = db.StringProperty()
     tags = db.StringListProperty()
+    view_count = db.IntegerProperty(default=0)
 
     def __dict__(self):
         return {
@@ -43,26 +51,40 @@ class Stream(db.Model):
                 "updated_at" : self.updated_at.strftime("%d/%m/%y"),
                 "cover_image" : self.cover_image,
                 "tags" : self.tags,
+                "view_count" : str(self.view_count),
                 "count" : self.images.count()
                 }
 
     # cursor can be used: https://developers.google.com/appengine/docs/python/datastore/queries#Python_Limitations_of_cursors
-    def get_images(self, limit=None, use_cursor=False, user=None):
-        if use_cursor:
+    def get_images(self, limit=None, useCursor=False, user=None, resetCursor=False):
+        # override use cursor flag if resetCursor flag is set
+        useCursor = useCursor and (not resetCursor)
+
+        if resetCursor:
+            memcache.delete("stream_images:cursor:%s")
+
+        stream_photos_query  = self.images
+        if useCursor:
             cursor = memcache.get("stream_images:cursor:%s" % user.google_id)
-        if use_cursor and cursor:
-            self.images.with_cursor(start_cursor=cursor)
 
-        stream_photos = self.images.fetch(limit=limit)
 
-        if use_cursor:
-            cursor = self.images.cursor()
-            memcache.set("stream_images:cursor:%s" % user.google_id, cursor)
+        if useCursor and cursor:
+            stream_photos_query.with_cursor(start_cursor=cursor)
+
+        stream_photos = stream_photos_query.fetch(limit=limit)
+
+        cursor = stream_photos_query.cursor()
+        memcache.set("stream_images:cursor:%s" % user.google_id, cursor)
 
         return stream_photos
 
     def to_json(self):
         return json.dumps(self.__dict__())
+
+    def update_view_count(self):
+        self.view_count = int(self.view_count) + 1
+        self.put()
+        return self.view_count
 
     @staticmethod
     def create_user_stream(name, user, cover_image, tags):
@@ -71,7 +93,7 @@ class Stream(db.Model):
             stream = Stream(owner=user,
                         name = name,
                         cover_image = cover_image,
-                        tags = tags.split(','))
+                        tags = tags.split(','), view_count=0)
             stream.put()
         else:
             return None, "Stream already present"
@@ -99,10 +121,21 @@ class Stream(db.Model):
         streams = user.subscriptions
         subscribed_streams = []
         for stream in streams:
-            subscribed_streams.append(db.get(stream).__dict__())
+            stream_obj = db.get(stream)
+            if stream_obj:
+                subscribed_streams.append(db.get(stream).__dict__())
 
         return subscribed_streams
 
+class Search():
+    @staticmethod
+    def find_by_keyword(keyword):
+        all_stream = Stream.all()
+        results = []
+        for stream in all_stream:
+            if (keyword in stream.name) or (keyword in stream.tags):
+                results.append(stream.__dict__())
+        return results
 """
 PHOTO
 """
@@ -121,4 +154,19 @@ class Photo(db.Model):
                 "comments" : self.comments,
                 "stream_id" : self.stream.key().id()
                 }
+
+
+class Automator(db.Model):
+    property_key = db.StringProperty()
+    property_value = db.StringProperty()
+
+    @staticmethod
+    def set_property(key, value):
+        Automator(property_key=key,
+                property_value=property_value).put()
+
+
+    def get_property(key):
+        return Automator.gql('WHERE property_key = :1',
+                key).get()
 

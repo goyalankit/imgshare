@@ -1,0 +1,67 @@
+{% include 'templates/header.html' %}
+<link rel="stylesheet" href="/css/owl.carousel.css">
+<link rel="stylesheet" href="/css/owl.theme.css">
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+<script src="/js/owl.carousel.js"></script>
+<style>
+html, body, .container {
+    height: 100%;
+}
+.container {
+    display: table;
+    vertical-align: middle;
+}
+.vertical-center-row {
+    display: table-cell;
+    vertical-align: middle;
+}
+    h1{
+	/* Using the custom font we've included in the HTML tab: */
+	    font-family: Satisfy, cursive;
+    	font-weight:bold;
+	    font-size:50px;
+	    padding-top: 60px;
+    }
+</style>
+<div id="fb-root"></div>
+<script>(function(d, s, id) {
+  var js, fjs = d.getElementsByTagName(s)[0];
+  if (d.getElementById(id)) return;
+  js = d.createElement(s); js.id = id;
+  js.src = "//connect.facebook.net/en_US/sdk.js#xfbml=1&appId=712733642148337&version=v2.0";
+  fjs.parentNode.insertBefore(js, fjs);
+}(document, 'script', 'facebook-jssdk'));</script>
+<div class="container">
+
+
+<div class="fb-share-button" data-href="http://github.com/goyalankit" data-width="45"></div>
+
+</div>
+
+   <script>
+
+/*  window.fbAsyncInit = function() {
+    FB.init({
+      appId      : '712733642148337',
+      xfbml      : true,
+      version    : 'v2.1'
+    });
+  };
+
+  (function(d, s, id){
+     var js, fjs = d.getElementsByTagName(s)[0];
+     if (d.getElementById(id)) {return;}
+     js = d.createElement(s); js.id = id;
+     js.src = "//connect.facebook.net/en_US/sdk.js";
+     fjs.parentNode.insertBefore(js, fjs);
+   }(document, 'script', 'facebook-jssdk'));
+
+    FB.ui({
+     method: 'share',
+     href: 'http://goyalankit.com'
+    }, function(response){});
+*/
+</script>
+</div>
+</body>
+</html>

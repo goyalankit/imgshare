@@ -1,0 +1,7 @@
+indexes:
+
+- kind: Stream
+  ancestor: no
+  properties:
+  - name: name
+  - name: created_at

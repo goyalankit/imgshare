@@ -1,0 +1,12 @@
+cron:
+- description: email_sender_5_minutes
+  url: /tasks/email_sender?time=5min
+  schedule: every 5 minutes
+
+- description: email_sender_1_hour
+  url: /tasks/email_sender?time=1hr
+  schedule: every 1 hours
+
+- description: email_sender_1_day
+  url: /tasks/email_sender?time=1day
+  schedule: every day 12:30

@@ -56,31 +56,77 @@
       margin-left: 5%;
       margin-top: 10%;
     }
+
+    .subscribe {
+      margin-top: 30%;
+    }
 </style>
+<div id="fb-root"></div>
+<script>(function(d, s, id) {
+  var js, fjs = d.getElementsByTagName(s)[0];
+  if (d.getElementById(id)) return;
+  js = d.createElement(s); js.id = id;
+  js.src = "//connect.facebook.net/en_US/sdk.js#xfbml=1&appId=712733642148337&version=v2.0";
+  fjs.parentNode.insertBefore(js, fjs);
+}(document, 'script', 'facebook-jssdk'));</script>
+
 <div class="container">
 
     <output id="outputLog"></output>
   <div id="main-box">
     <div id="owl-demo" class="owl-carousel">
+      {% if not photos %}
+      <div style="margin-top: 15%;"><h2>No Photos Yet :(</h2></div>
+      {% endif %}
       {% for photo in photos %}
-      <div class="lazyOwl"><img src="{{photo}}" alt="Owl Image"></div>
-        {% endfor %}
-    </div>
+        <div class="lazyOwl"><img src="{{photo['url']}}" alt="Owl Image"></div> {% endfor %} </div>
+    <img style="display: none;" src="/images/default-share.png"> </img>
+      {% if photos %}
     <div id="loadmore">
       <a href="" class="btn add btn-primary">Load More</a>
     </div>
+      {% endif %}
   </div>
-  <div id="streamid" style="display:none;">{{stream.key().id()}} </div>
     <div id="info-box" style="float: right">
-    <form id="formID" enctype='application/json' method="post">
+      <form action="{{upload_url}}" id="formID" method="POST" enctype="multipart/form-data">
       <fieldset>
-        <legend>My Awesome Stream</legend>
+        <legend>{{stream.name}}
+      {% if owner == True %}
+          <span class="label label-success">owned</span>
+      {% elif subscribed == True %}
+          <span class="label label-warning">subscribed</span>
+      {% endif %}
+      </legend>
         <label>Upload</label>
-        <div><input type="file" name="img"/></div>
-        <input type="textarea" name="comments" placeholder="give me some sweet comments.."><br/>
+        <label><input type="file" name="file" size="60"></label><br>
+        <input "type"="text" id="stream_id" name="stream_id" style="display:none;" value="{{stream.key().id()}}"/><br/>
+
+        <label>Comments: </label><input type="textarea" name="comments" placeholder="give me some sweet comments.."><br/><br/>
         <button type="submit" class="btn">Submit</button>
       </fieldset>
     </form>
+
+
+    <div class="subscribe">
+      {% if owner != True %}
+        {% if subscribed == True %}
+          <a href="" id="unsubscribe" class="btn subunsub btn-primary">UnSubscribe</a><br/>
+        {% else %}
+          <a href="" id="subscribe" class="btn subunsub btn-primary">Subscribe</a><br/>
+        {% endif %}
+      {% endif %}
+      <!--div class="fb-share-button" data-width="155"></div-->
+
+      <a href="" 
+  onclick="
+    window.open(
+      'https://www.facebook.com/sharer/sharer.php?u='+encodeURIComponent(location.href),
+      'fb-share-dialog',
+      'width=626,height=436');
+    return false;">
+    <img src="http://3.bp.blogspot.com/-z-S37TI53oA/Ucl54sj9V8I/AAAAAAAACXs/MsUCZ-XqQaE/s1600/facebook_share_button-4.png" />
+  </a>
+      </div>
     </div>
 <script>
 /* Documentation: http://owlgraphic.com/owlcarousel/demos/manipulations.html */
@@ -115,14 +161,67 @@
   Second parameter "targetPosition" is optional and accept number values.
   To add item at the end of carousel you could use -1 value. Last item is default value.
   */
+  $('.subunsub').on("click", function(e){
+    e.preventDefault();
+    var subText = $(this).attr('id');
+    var stream_id = $("#stream_id").val()
+    if (subText == "subscribe") {
+      $.post( "./subscribe.json", { "stream_id" : stream_id} , function( data ) {
+        json = JSON.parse(data);
+        if (json.status == "OK") {
+          $('legend span').remove();
+          $('legend').append('<span class="label label-warning">subscribed</span>');
+          $('.subscribe a.subunsub').attr('id', 'unsubscribe');
+          $('.subscribe a.subunsub').text("UnSubscribe");
+        }
+      });
+    } else {
+      $.post( "./unsubscribe.json", { "stream_ids" : stream_id} , function( data ) {
+        json = JSON.parse(data);
+        if (json.status == "OK") {
+          $('legend span').remove();
+          $('legend').append('<span class="label label-warning">not subscribed</span>');
+          $('.subscribe a.subunsub').attr('id', 'subscribe');
+          $('.subscribe a.subunsub').text("Subscribe");
+        }
+      });
+    }
+  });
+
   $('.add').on("click", function(e){
-  e.preventDefault();
-  i += 1;
-  var content = "<div class=\"lazyowl\"><img src=\"http://farm4.static.flickr.com/3882/15217941542_4473b99f02_b.jpg\" alt=\"Owl Image\"></div>";
+    e.preventDefault();
+    var stream_id = $("#stream_id").val()
+    $.get( "./view.json", { "get_more" : "true", "id" : stream_id} , function( data ) {
+      json = JSON.parse(data);
+      if (json.result.length == 0) { alert("No more images.."); }
+      for(i=0; i<json.result.length; i++) {
+        var url = json.result[i].url;
+        var content = "<div class=\"lazyowl\"><img src="+ url +" alt=\"Owl Image\"></div>";
+        owl.data('owlCarousel').addItem(content);
+      }
+    });
+  });
 
-  owl.data('owlCarousel').addItem(content);
-});
 
+function getUrlParameter(sParam)
+{
+    var sPageURL = window.location.search.substring(1);
+    var sURLVariables = sPageURL.split('&');
+    for (var i = 0; i < sURLVariables.length; i++)
+    {
+        var sParameterName = sURLVariables[i].split('=');
+        if (sParameterName[0] == sParam)
+        {
+            return sParameterName[1];
+        }
+    }
+}
+
+var refresh = getUrlParameter('upload');
+if (refresh == "successful") {
+  var stream_id = $("#stream_id").val();
+  window.location.href = "./view?id="+stream_id;
+}
 </script>
 </div>
 </body>

@@ -11,58 +11,152 @@
     <h2>Manage</h2>
 
     <h3>Streams I own</h3>
+    <div class="alert" id="searchresult" style="margin-top: 3%; display:none;">
+       <button type="button" id="closebtn" class="close" data-dismiss="alert">&times;</button>
+       <h4></h4>
+    </div>
 <table id="stream1" class="table table-bordered sort display data-table sort display tablesorter" >
 <thead>
 <tr>
     <th>Name</th>
     <th>Last New Picture</th>
     <th>Number of Pictures</th>
+    <th>View Count</th>
     <th>Delete</th>
 </tr>
 </thead>
-<tbody>
+<tbody id="ownedBody">
 {% for stream in streams["owned"] %}
 <tr>
-  <td>{{stream["name"]}}</td>
+  <td><a href="./stream/view?id={{stream['id']}}">{{stream["name"]}}</a></td>
   <td>{{stream["updated_at"]}}</td>
   <td>{{stream["count"]}}</td>
-    <td><input type="checkbox" name=que_1 value="{{stream['id']}}" /></td>
+  <td>{{stream["view_count"]}}</td>
+  <td><input type="checkbox" id="stream_{{stream['id']}}" value="{{stream['id']}}" /></td>
 </tr>
 {% endfor %}
 </tbody>
 </table>
-<button class="btn btn-danger" type="button">Delete Selected</button>
+<button class="btn btn-danger" id="deletebtn" type="button">Delete Selected</button>
 
 <hr/>
 
-<h3>Streams I subscribe to</h3>
+<h3>Streams I subscribe</h3>
 <table id="stream2" class="table table-bordered sort display data-table sort display tablesorter" >
 <thead>
 <tr>
     <th>Name</th>
     <th>Last New Picture</th>
     <th>Number of Pictures</th>
+    <th>View Count</th>
     <th>Unsubscribe</th>
 </tr>
 </thead>
-<tbody>
+<tbody id="subbody">
 {% for stream in streams["subscribed"] %}
 <tr>
-  <td>{{stream["name"]}}</td>
+  <td><a href="./stream/view?id={{stream['id']}}">{{stream["name"]}}</a></td>
   <td>{{stream["updated_at"]}}</td>
   <td>{{stream["count"]}}</td>
-    <td><input type="checkbox" name=que_1 value="{{stream['id']}}" /></td>
+  <td>{{stream["view_count"]}}</td>
+  <td><input type="checkbox" id="stream_{{stream['id']}}" name=que_1 value="{{stream['id']}}" /></td>
 </tr>
 {% endfor %}
 </tbody>
 </table>
-<button class="btn btn-danger" type="button">Unsubscribe Selected</button>
+<button class="btn btn-danger" id="unsubbtn" type="button">Unsubscribe Selected</button>
 
     <!--form onsubmit="return false">
         <div><label for="id">Gmail UserId:</label><input id="id" /></div>
         <div><input id="getGreeting" type="submit" class="btn btn-small" value="Submit"></div>
     </form--!>
 <script>
+
+function getUrlParameter(sParam)
+{
+    var sPageURL = window.location.search.substring(1);
+    var sURLVariables = sPageURL.split('&');
+    for (var i = 0; i < sURLVariables.length; i++) 
+    {
+        var sParameterName = sURLVariables[i].split('=');
+        if (sParameterName[0] == sParam) 
+        {
+            return sParameterName[1];
+        }
+    }
+}
+
+  var refresh = getUrlParameter('refresh');
+  if (refresh == "true") {
+    window.location.href = "./manage";
+  }
+
+  /* hide the info bar on close */
+  $("#closebtn").on("click", function(e){
+    $("#searchresult").hide();
+  });
+
+  $('#deletebtn').on("click", function(e){
+    e.preventDefault();
+    selected = []
+    $("#ownedBody input:checked").each(function() {
+      selected.push(($(this).attr('value')));
+    });
+
+    if (selected.length > 0){
+      var r = confirm("Are you sure you want to delete selected stream(s). This action cannot be undone!");
+      if (r != true) {
+        return;
+      }
+      } else {
+        var r = alert("No stream id selected.");
+        return;
+      }
+
+    $.post( "./stream/delete", {"stream_ids" : selected.join(',')} ,function( data ) {
+      for (var i = 0; i < selected.length; ++i) {
+        $('#stream_'+selected[i]).parent().parent().remove()
+      };
+    $("#searchresult").addClass('alert-success');
+        $("#searchresult").show();
+        $("#searchresult h4").html("Stream(s) deleted successfully!");
+    });
+
+  });
+
+
+ $('#unsubbtn').on("click", function(e){
+    e.preventDefault();
+    selected = []
+    $("#subbody input:checked").each(function() {
+      selected.push(($(this).attr('value')));
+    });
+
+    if (selected.length > 0){
+      var r = confirm("Are you sure you want to unsubscribe selected stream(s).");
+      if (r != true) {
+        return;
+      }
+      } else {
+        var r = alert("No stream selected.");
+        return;
+      }
+
+    $.post( "./stream/unsubscribe.json", {"stream_ids" : selected.join(',')} ,function( data ) {
+      for (var i = 0; i < selected.length; ++i) {
+        $('#stream_'+selected[i]).parent().parent().remove()
+      };
+    $("#searchresult").addClass('alert-success');
+        $("#searchresult").show();
+        $("#searchresult h4").html("Stream(s) unsubscribed successfully!");
+    });
+
+  });
+
+
+
+
+
 $(document).ready(function()
     {
         $("#stream1").tablesorter();

@@ -1,0 +1,133 @@
+{% include 'templates/header.html' %}
+<link rel="stylesheet" href="/css/owl.carousel.css">
+<link rel="stylesheet" href="/css/owl.theme.css">
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+<script src="/js/owl.carousel.js"></script>
+<style>
+html, body, .container {
+    height: 100%;
+}
+.container {
+    display: table;
+    vertical-align: middle;
+}
+.vertical-center-row {
+    display: table-cell;
+    vertical-align: middle;
+}
+    h1{
+	/* Using the custom font we've included in the HTML tab: */
+	    font-family: Satisfy, cursive;
+    	font-weight:bold;
+	    font-size:50px;
+	    padding-top: 60px;
+    }
+</style>
+<link rel="stylesheet" href="/css/grid.css">
+<div class="container">
+    <output id="outputLog"></output>
+    <div class="col-xs-4 col-xs-offset-4" id="virtualForm" style="margin-top: 3%;">
+        <input type="text" id="searchquery" class="search-query" placeholder="stream name">
+        <button type="submit" id="searchbtn" class="btn btn-primary">Submit</button>
+    </div>
+
+    <div class="alert" id="searchresult" style="margin-top: 3%; display:none;">
+       <button type="button" id="closebtn" class="close" data-dismiss="alert">&times;</button>
+       <h4></h4>
+    </div>
+
+    <hr/>
+		<div id="four-columns" class="grid-container">
+			<ul id="resultul" class="rig columns-4">
+			</ul>
+    </div>
+
+
+</div>
+
+
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js" type="text/javascript"></script>
+<script type="text/javascript">
+$(document).ready(function() {
+	$('.grid-nav li a').on('click', function(event){
+		event.preventDefault();
+		$('.grid-container').fadeOut(500, function(){
+			$('#' + gridID).fadeIn(500);
+		});
+		var gridID = $(this).attr("data-id");
+		$('.grid-nav li a').removeClass("active");
+		$(this).addClass("active");
+	});
+});
+</script>
+
+
+
+<script>
+
+  /* hide the info bar on close */
+  $("#closebtn").on("click", function(e){
+    $("#searchresult").hide();
+  });
+
+  /* call the search service */
+  $('#searchbtn').on("click", function(e){
+    name = $("#searchquery").val();
+
+    $.get( "./search.json", { "name" : name} , function( data ) {
+      $('.canberemoved').remove();
+      json = JSON.parse(data);
+      if (json.result.length == 0) {
+        $("#searchresult").addClass('alert-warning');
+        $("#searchresult").show();
+        $("#searchresult h4").html("No stream found with keyword "+ $('#searchquery').val() +". Try some other name.")
+      } else {
+        $("#searchresult").addClass('alert-success');
+        $("#searchresult").show();
+        $("#searchresult h4").html(json.result.length + " results found.");
+
+
+        json = JSON.parse(data);
+
+        for(i=0; i<json.result.length; i++) {
+          var url = json.result[i].url;
+          var content = "<li class='canberemoved'><a href='./stream/view?id=" + json.result[i].id +"' style='text-decoration: none;'> ";
+					var img = "<img class='gl-img' src='"+ (json.result[i].cover_image || 'http://farm4.static.flickr.com/3882/15217941542_4473b99f02_b.jpg') +"' />";
+          var h3 = "<h3>"+json.result[i].name+"</h3>";
+          var p = "<p> <b>Views: </b>"+ (json.result[i].view_count) +"</p></a></li>";
+
+          content += img + h3 + p;
+          $("#resultul").append(content);
+        }
+
+           }
+      /*for(i=0; i<json.result.length; i++) {
+        var url = json.result[i].url;
+        var content = "<div class=\"lazyowl\"><img src="+ url +" alt=\"Owl Image\"></div>";
+        owl.data('owlCarousel').addItem(content);
+      }*/
+    });
+
+  });
+
+
+  /*
+    Get the enter working on input field
+   */
+  $(function() {
+    $('#virtualForm').each(function() {
+        $(this).find('input').keypress(function(e) {
+            // Enter pressed?
+            if(e.which == 10 || e.which == 13) {
+              $("#searchbtn").click();
+            }
+        });
+
+        $(this).find('input[type=submit]').hide();
+    });
+  });
+
+</script>
+</div>
+</body>
+</html>
