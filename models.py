@@ -3,7 +3,11 @@ from google.appengine.ext import blobstore
 from google.appengine.api import memcache
 from google.appengine.api import images
 from google.appengine.api import search
+from google.appengine.api import mail
+from settings import JINJA_ENVIRONMENT
+import datetime
 import json
+import operator
 
 class User(db.Model):
     subscriptions = db.ListProperty(db.Key)
@@ -84,6 +88,7 @@ class Stream(db.Model):
     def update_view_count(self):
         self.view_count = int(self.view_count) + 1
         self.put()
+        View(stream=self).put()
         return self.view_count
 
     @staticmethod
@@ -156,17 +161,75 @@ class Photo(db.Model):
                 }
 
 
-class Automator(db.Model):
-    property_key = db.StringProperty()
-    property_value = db.StringProperty()
+
+class View(db.Model):
+    stream = db.ReferenceProperty(Stream, collection_name="views")
+    created_at = db.DateTimeProperty(auto_now_add=True)
 
     @staticmethod
-    def set_property(key, value):
-        Automator(property_key=key,
-                property_value=property_value).put()
+    def seconds_ago(time_s):
+        return datetime.datetime.now() - datetime.timedelta(seconds=time_s)
+
+    @staticmethod
+    def getTop():
+        stream_count = {}
+        views = View.all().filter('created_at >', View.seconds_ago(2*60*60))
+        for view in views:
+            if view.stream.key().id() in stream_count:
+                stream_count[view.stream.key().id()] += 1
+            else:
+                stream_count[view.stream.key().id()] = 1
+        return sorted(stream_count.items(), key=operator.itemgetter(1), reverse=True)[0:3]
+
+class TrendSetter(db.Model):
+
+    @staticmethod
+    def topTrending():
+        TrendSetter.setTrend()
+        result = {}
+        stream_dict = dict(memcache.get("top_trending"))
+        i = 0
+        for streamid in stream_dict:
+            stream = Stream.get_by_id(streamid)
+            if stream:
+                result[i]= { "stream" : stream.__dict__(), "one_hour_view_count" : stream_dict[streamid] }
+                i += 1
+        return result
 
 
-    def get_property(key):
-        return Automator.gql('WHERE property_key = :1',
-                key).get()
+    @staticmethod
+    def setTrend():
+        if len(View.getTop()) > 0:
+            memcache.set("top_trending", View.getTop())
+
+
+
+class CronHandler(db.Model):
+
+    @staticmethod
+    def initialize():
+        pass
+
+    @staticmethod
+    def runJob():
+        pass
+
+    @staticmethod
+    def hourlyJobs():
+        TrendSetter.setTrend()
+
+
+class Mailer():
+    @staticmethod
+    def sendMail(ids, mailType):
+        message = mail.EmailMessage(sender="ankit3goyal@gmail.com",
+                            subject="Your account has been approved")
+        template = JINJA_ENVIRONMENT.get_template('templates/newsletter.html')
+        template_values = {}
+        for email in ids:
+            message.to = email
+            message.html = template.render(template_values)
+            message.send()
+        return
+
 

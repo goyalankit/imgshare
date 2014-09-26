@@ -1,0 +1,90 @@
+{% include 'templates/header.html' %}
+<link rel="stylesheet" href="/css/grid.css">
+
+
+<div class="container">
+
+    <output id="outputLog"></output>
+
+    <h2 style="margin-top: 3%; color: grey;">your streams</h2>
+    <hr/>
+		<div id="four-columns" class="grid-container">
+			<ul class="rig columns-4">
+    {% if user_streams %}
+        {% for id in user_streams %}
+				<li>
+        <a href="./stream/view?id={{user_streams[id]['stream']['id']}}" style="text-decoration: none;">
+					<img class="gl-img" src="{{user_streams[id]['stream']['cover_image'] or 'http://farm4.static.flickr.com/3882/15217941542_4473b99f02_b.jpg' }}" />
+          <h3>{{user_streams[id]['stream']['name']}}</h3>
+          <p> {{user_streams[id]['stream']['comments']}} </p>
+        </a>
+        <span class="label label-warning">{{user_streams[id]['one_hour_view_count']}} views in last hour</span>
+        <span class="label label-info">{{user_streams[id]['stream']['view_count']}} total views</span>
+				</li>
+        {% endfor %}
+    {% endif %}
+			</ul>
+    </div>
+
+
+
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js" type="text/javascript"></script>
+<script type="text/javascript">
+$(document).ready(function() {
+	$('.grid-nav li a').on('click', function(event){
+		event.preventDefault();
+		$('.grid-container').fadeOut(500, function(){
+			$('#' + gridID).fadeIn(500);
+		});
+		var gridID = $(this).attr("data-id");
+		
+		$('.grid-nav li a').removeClass("active");
+		$(this).addClass("active");
+	});
+});
+</script>
+
+<!--script>
+/* Documentation: http://owlgraphic.com/owlcarousel/demos/manipulations.html */
+
+  var owl = $("#owl-demo"),
+  i = 0,
+
+  textholder,
+  booleanValue = false;
+
+  //init carousel
+    owl.owlCarousel({
+        stopOnHover : true,
+      navigation:true,
+      paginationSpeed : 1000,
+      goToFirstSpeed : 2000,
+      rewindNav : true,
+      items : 3,
+//       singleItem : true,
+      autoHeight : true
+    });
+
+  /*
+  addItem() method add new slides on given position
+
+  Syntax:
+  owldata.addItem(htmlString, targetPosition)
+
+  First parameter(mandatory) "htmlString" accept string like this:
+  var newItem = "<div>new Item</div>"
+  Second parameter "targetPosition" is optional and accept number values.
+  To add item at the end of carousel you could use -1 value. Last item is default value.
+  */
+  $('.add').on("click", function(e){
+  e.preventDefault();
+  i += 1;
+  var content = "<div class=\"lazyowl\"><img src=\"http://farm4.static.flickr.com/3882/15217941542_4473b99f02_b.jpg\" alt=\"Owl Image\"></div>";
+
+  owl.data('owlCarousel').addItem(content);
+});
+
+</script-->
+</div>
+</body>
+</html>

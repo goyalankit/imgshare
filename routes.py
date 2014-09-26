@@ -15,8 +15,9 @@ _routes = [
         RedirectRoute('/stream/subscribe<format:\.(.*)>', user.Subscribe , name='subscribe a stream', strict_slash=True),
         RedirectRoute('/stream/unsubscribe<format:\.(.*)>', user.UnSubscribe , name='subscribe a stream', strict_slash=True),
         RedirectRoute('/search<format:(.*)>', user.Search , name='search stream', strict_slash=True),
-        RedirectRoute('/sendmail<format:(.*)>', user.Mailer , name='search stream', strict_slash=True),
+        #RedirectRoute('/sendmail<format:(.*)>', user.Mailer , name='search stream', strict_slash=True),
         RedirectRoute('/social<format:(.*)>', user.Social , name='search stream', strict_slash=True),
+        RedirectRoute('/trending<format:(.*)>', user.Trending , name='trending stream', strict_slash=True),
         RedirectRoute('/stream/delete', user.DeleteStream , name='search stream', strict_slash=True)
 ]
 

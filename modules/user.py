@@ -161,7 +161,12 @@ class Create(webapp2.RequestHandler):
                                             user,
                                             self.request.get("cover_image", DEFAULT_IMAGES[0]),
                                             self.request.get("tags", ""))
+
             if stream:
+                if self.request.get('addsub'):
+                    email_ids = self.request.get('addsub').split(',')
+                    models.Mailer.sendMail(email_ids, "subscribe")
+
                 if 'json' in format:
                     self.response.out.write(json.dumps({"status" : "OK"}))
                 else:
@@ -328,6 +333,7 @@ class Search(webapp2.RequestHandler):
 
         self.response.write(json.dumps({"status" : "OK", "result" : streams}))
 
+"""
 class Mailer(webapp2.RequestHandler):
     def get(self, format):
         message = mail.EmailMessage(sender="ankit3goyal@gmail.com",
@@ -339,7 +345,7 @@ class Mailer(webapp2.RequestHandler):
         message.html = template.render(template_values)
 
         message.send()
-
+"""
 class Social(webapp2.RequestHandler):
     def get(self, format):
         user = models.User.get_user(users.get_current_user().user_id())
@@ -354,4 +360,23 @@ class Social(webapp2.RequestHandler):
         else:
             template = JINJA_ENVIRONMENT.get_template('templates/social.html')
             self.response.write(template.render(template_values))
+
+class Trending(webapp2.RequestHandler):
+    def get(self, format):
+        if not users.get_current_user():
+            self.redirect("/")
+        user = models.User.get_user(users.get_current_user().user_id())
+        url = users.create_logout_url(self.request.uri)
+        template_values = {'user' : users.get_current_user(), 'url' : url}
+        streams = models.TrendSetter.topTrending()
+        template_values['user_streams'] = streams
+        if format.find('json') > 0:
+            self.response.headers.add_header("Content-Type", "application/json")
+            # may be send latest
+            self.response.out.write(json.dumps({"status" : "OK", "result" : streams }))
+            return
+        else:
+            template = JINJA_ENVIRONMENT.get_template('templates/trending.html')
+            self.response.write(template.render(template_values))
+
 
