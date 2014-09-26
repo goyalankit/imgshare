@@ -350,19 +350,7 @@ class Search(webapp2.RequestHandler):
         streams = models.Search.find_by_keyword(self.request.get('name'));
 
         self.response.write(json.dumps({"status" : "OK", "result" : streams}))
-"""
-class Mailer(webapp2.RequestHandler):
-    def get(self, format):
-        message = mail.EmailMessage(sender="ankit3goyal@gmail.com",
-                            subject="Your account has been approved")
 
-        message.to = "me@goyalankit.com"
-        template = JINJA_ENVIRONMENT.get_template('templates/newsletter.html')
-        template_values = {}
-        message.html = template.render(template_values)
-
-        message.send()
-"""
 class Social(webapp2.RequestHandler):
     def get(self, format):
         user = models.User.get_user(users.get_current_user().user_id())
@@ -392,8 +380,13 @@ class Trending(webapp2.RequestHandler):
         streams = models.TrendSetter.topTrending()
         template_values['user_streams'] = streams
         r = lambda: random.randint(0,255)
-        #["83BAE8", "E3DB18", "057351", "8F354D", "941F23", "1C6D76"]
+        # ["83BAE8", "E3DB18", "057351", "8F354D", "941F23", "1C6D76"]
         template_values['random_colors'] =  [('%02X%02XF0' % (r(),r())) for i in xrange(0,30)]
+        job = models.Jobs.gql("WHERE user = :1 and job_type = :2", user, 'trends').get()
+        if job:
+            template_values['checked_options'] = {job.duration : 'checked'}
+        else:
+            template_values['checked_options'] = {'noreport' : 'checked'}
 
         if format.find('json') > 0:
             self.response.headers.add_header("Content-Type", "application/json")
@@ -407,4 +400,40 @@ class Trending(webapp2.RequestHandler):
 
 class UpdateNotificationRate(webapp2.RequestHandler):
     def post(self, format):
-        pass
+        if not users.get_current_user():
+            self.redirect("/")
+            return
+        user = models.User.get_user(users.get_current_user().user_id())
+        if self.request.get('optionsRadios'):
+            models.Jobs.createOrUpdate("trends", self.request.get('optionsRadios'), user)
+
+        if 'json' in format:
+            self.response.headers.add_header("Content-Type", "application/json")
+            # may be send latest
+            self.response.out.write(json.dumps({"status" : "OK", "result" : "Job updated" }))
+        else:
+            self.redirect('./trending?refresh=true&job-update=success')
+
+class TaskExecutor(webapp2.RequestHandler):
+    def get(self):
+        if not (self.request.get('time')):
+            return
+        duration = self.request.get('time')
+        models.CronHandler.runJob(duration)
+        return
+
+
+"""
+class Mailer(webapp2.RequestHandler):
+    def get(self, format):
+        message = mail.EmailMessage(sender="ankit3goyal@gmail.com",
+                            subject="Your account has been approved")
+
+        message.to = "me@goyalankit.com"
+        template = JINJA_ENVIRONMENT.get_template('templates/newsletter.html')
+        template_values = {}
+        message.html = template.render(template_values)
+
+        message.send()
+"""
+

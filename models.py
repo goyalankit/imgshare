@@ -183,19 +183,19 @@ class View(db.Model):
         return sorted(stream_count.items(), key=operator.itemgetter(1), reverse=True)[0:3]
 
 class TrendSetter(db.Model):
-
     @staticmethod
     def topTrending():
         TrendSetter.setTrend()
         result = {}
-        stream_dict = dict(memcache.get("top_trending"))
+        stream_dict = dict(memcache.get("top_trending") or {})
         i = 0
         for streamid in stream_dict:
             stream = Stream.get_by_id(streamid)
             if stream:
                 result[i]= { "stream" : stream.__dict__(), "one_hour_view_count" : stream_dict[streamid] }
                 i += 1
-        return result
+
+        return dict(sorted(result.items(), key=lambda x: x[1]["one_hour_view_count"]))
 
 
     @staticmethod
@@ -204,33 +204,61 @@ class TrendSetter(db.Model):
             memcache.set("top_trending", View.getTop())
 
 
+class Jobs(db.Model):
+    job_type = db.StringProperty("job_type")
+    duration = db.StringProperty("duration")
+    user = db.ReferenceProperty(User, collection_name="jobs")
+
+    @staticmethod
+    def getJobs(duration, job_type):
+        job_q = Jobs.gql("WHERE job_type = :1 and duration = :2", job_type, duration)
+        return job_q.fetch(limit=None)
+
+    @staticmethod
+    def createOrUpdate(job_type, duration, user):
+        req_type = None
+        if user.jobs:
+            req_type = [job for job in user.jobs if job.job_type == job_type]
+
+        if req_type:
+            req_type[0].duration = duration;
+            req_type[0].put()
+        else:
+            Jobs(user=user, job_type=job_type, duration=duration).put()
 
 class CronHandler(db.Model):
-
     @staticmethod
     def initialize():
         pass
 
     @staticmethod
-    def runJob():
-        pass
+    def runJob(duration):
+        jobs = Jobs.getJobs(duration, "trends")
+        emails = [job.user.email for job in jobs]
+        Mailer.sendMail(emails, "trends")
 
     @staticmethod
     def hourlyJobs():
-        TrendSetter.setTrend()
-
+        pass
 
 class Mailer():
     @staticmethod
     def sendMail(ids, mailType):
         message = mail.EmailMessage(sender="ankit3goyal@gmail.com",
                             subject="Your account has been approved")
+
         template = JINJA_ENVIRONMENT.get_template('templates/newsletter.html')
-        template_values = {}
+
         for email in ids:
             message.to = email
-            message.html = template.render(template_values)
+            message.html = template.render(Mailer.trendingEmailTemplateValues())
             message.send()
         return
 
+    @staticmethod
+    def trendingEmailTemplateValues():
+        template_values = {}
+        streams = TrendSetter.topTrending()
+        template_values['streams'] = streams
+        return template_values
 

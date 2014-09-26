@@ -23,8 +23,8 @@
 			<div class="content">
 				<table bgcolor="#999999" >
 					<tr>
-						<td><img src="http://placehold.it/200x50/" /></td>
-						<td align="right"><h6 class="collapse">Newsletter</h6></td>
+            <td><img src="http://i.imgur.com/nRqP68r.png?2" /></td>
+						<td align="right"><h6 class="collapse">Trending Report</h6></td>
 					</tr>
 				</table>
 			</div><!-- /content -->
@@ -46,129 +46,34 @@
 					<tr>
 						<td>
 							
-							<h1>Great Scott!</h1>
-							<p class="lead">Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et.</p>
+							<h1>Hello!</h1>
+							<p class="lead">You asked we delivered! Here are some of our trending streams!</p>
 							
-							<!-- A Real Hero (and a real human being) -->
-							<p><img src="http://placehold.it/600x300" /></p><!-- /hero -->
-							<p>Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. </p>
 						</td>
 					</tr>
 				</table>
 			</div><!-- /content -->
-			
+      {% for streamid in streams %}
 			<!-- content -->
 			<div class="content">
 				
 				<table bgcolor="">
 					<tr>
-						<td class="small" width="20%" style="vertical-align: top; padding-right:10px;"><img src="http://placehold.it/75x75" /></td>
+						<td class="small" width="20%" style="vertical-align: top; padding-right:10px;"><img src="{{streams[streamid]['stream']['cover_image'] or ('http://placehold.it/75x75/000000/ffffff&text='+ streams[streamid]['stream']['name']|truncate(8)) }}" /></td>
 						<td>
-							<h4>Title Ipsum <small>This is a note.</small></h4>
-							<p class="">Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. </p>
-							<a class="btn">Clickity Click &raquo;</a>
+              <h4>{{ streams[streamid]["stream"]["name"]}}</h4>
+              <a class="btn" href="http://ninth-optics-701.appspot.com/stream/view?id={{streams[streamid]['stream']['id']}}">go see &raquo;</a>
 						</td>
 					</tr>
 				</table>
 			
 			</div><!-- /content -->
-			
-			<!-- content -->
-			<div class="content"><table bgcolor="">
-				<tr>
-					<td class="small" width="20%" style="vertical-align: top; padding-right:10px;"><img src="http://placehold.it/75x75" /></td>
-					<td>
-						<h4>Title Ipsum <small>This is a note.</small></h4>
-						<p class="">Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. </p>
-						<a class="btn">Clickity Click &raquo;</a>
-					</td>
-				</tr>
-			</table></div><!-- /content -->
-			
-			<!-- content -->
-			<div class="content"><table bgcolor="">
-				<tr>
-					<td>
-						
-						<!-- Callout Panel -->
-						<p class="callout">Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt. <a href="#">Do it Now! &raquo;</a>	</p><!-- /callout panel -->
-						
-					</td>
-				</tr>
-			</table></div><!-- /content -->
-			
-			<!-- content -->
-			<div class="content"><table bgcolor="">
-				<tr>
-					<td class="small" width="20%" style="vertical-align: top; padding-right:10px;"><img src="http://placehold.it/75x75" /></td>
-					<td>
-						<h4>Title Ipsum <small>This is a note.</small></h4>
-						<p class="">Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. </p>
-						<a class="btn">Clickity Click &raquo;</a>
-					</td>
-				</tr>
-			</table></div><!-- /content -->
-			
-			<!-- content -->
-			<div class="content"><table bgcolor="">
-				<tr>
-					<td class="small" width="20%" style="vertical-align: top; padding-right:10px;"><img src="http://placehold.it/75x75" /></td>
-					<td>
-						<h4>Title Ipsum <small>This is a note.</small></h4>
-						<p class="">Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. </p>
-						<a class="btn">Clickity Click &raquo;</a>
-				
-					</td>
-				</tr>
-			</table></div><!-- /content -->
-			
+      {% endfor %}
 			<!-- content -->
 			<div class="content">
 				<table bgcolor="">
 					<tr>
 						<td>
-							
-							<!-- social & contact -->
-							<table bgcolor="" class="social" width="100%">
-								<tr>
-									<td>
-										
-										<!--- column 1 -->
-										<div class="column">
-											<table bgcolor="" cellpadding="" align="left">
-										<tr>
-											<td>				
-												
-												<h5 class="">Connect with Us:</h5>
-												<p class=""><a href="#" class="soc-btn fb">Facebook</a> <a href="#" class="soc-btn tw">Twitter</a> <a href="#" class="soc-btn gp">Google+</a></p>
-						
-												
-											</td>
-										</tr>
-									</table><!-- /column 1 -->
-										</div>
-										
-										<!--- column 2 -->
-										<div class="column">
-											<table bgcolor="" cellpadding="" align="left">
-										<tr>
-											<td>				
-																			
-												<h5 class="">Contact Info:</h5>												
-												<p>Phone: <strong>408.341.0600</strong><br/>
-                Email: <strong><a href="emailto:hseldon@trantor.com">hseldon@trantor.com</a></strong></p>
-                
-											</td>
-										</tr>
-									</table><!-- /column 2 -->	
-										</div>
-										
-										<div class="clear"></div>
-	
-									</td>
-								</tr>
-							</table><!-- /social & contact -->
-							
 						</td>
 					</tr>
 				</table>
@@ -192,9 +97,7 @@
 						<tr>
 							<td align="center">
 								<p>
-									<a href="#">Terms</a> |
-									<a href="#">Privacy</a> |
-									<a href="#"><unsubscribe>Unsubscribe</unsubscribe></a>
+									<a href="http://ninth-optics-701.appspot.com/trending"><unsubscribe>Unsubscribe</unsubscribe></a>
 								</p>
 							</td>
 						</tr>
