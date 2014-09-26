@@ -7,7 +7,7 @@
     <output id="outputLog"></output>
 
     
-    <h2 style="margin-top: 3%; color: grey;">your streams</h2>
+    <h2 style="margin-top: 0%; margin-bottom: -1.8%; color: grey;">your streams</h2>
     <hr/>
 		<div id="four-columns" class="grid-container">
 			<ul class="rig columns-4">
@@ -16,7 +16,7 @@
         {% for stream in user_streams[stream_type] %}
 				<li>
         <a href="./stream/view?id={{stream['id']}}" style="text-decoration: none;">
-					<img class="gl-img" src="{{stream['cover_image'] or 'http://farm4.static.flickr.com/3882/15217941542_4473b99f02_b.jpg' }}" />
+          <img class="gl-img" src="{{stream['cover_image'] or ('http://placehold.it/1024x626/'+ random_colors[range(0,30)|random] +'/000000&text=' + stream['name']|truncate(8)) }}" />
           <!--<a href="./stream/view?id={{stream['id']}}"><img src="" onerror="this.src='http://farm4.static.flickr.com/3882/15217941542_4473b99f02_b.jpg'"></a>-->
           <h3>{{stream['name']}}</h3>
           <p> {{stream['comments']}} </p>

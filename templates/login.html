@@ -1,19 +1,71 @@
 {% include 'templates/header.html' %}
+<style>
+body {
+background: url('/images/bround.jpg');
+}
+</style>
 <div class="container">
 
     <output id="outputLog"></output>
 
-    <form action="/login">
+    <!--form action="/login">
         <h2>Login and Share the world!</h2>
         <div><label for="greeting">Username:</label><input id="username" /></div>
         <div><label for="count">Password:</label><input id="password" type="password"/></div>
-        <div><input id="login" type="submit" class="btn btn-small" value="Submit"></div>
-    </form>
-
-    <b>OR</b>
-
-    use gmail
+        <div><input id="login" type="submit" class="btn btn-small" value="Submit"></div!>
    <a href="{{ url|safe }}">{{ url_linktext }}</a>
+    </form-->
+
+
+  <link href="https://fonts.googleapis.com/css?family=Roboto" rel="stylesheet" type="text/css">
+
+  <style type="text/css">
+    #customBtn {
+      display: inline-block;
+      background: #dd4b39;
+      color: white;
+      width: 165px;
+      border-radius: 5px;
+      white-space: nowrap;
+    }
+    #customBtn:hover {
+      background: #e74b37;
+      cursor: hand;
+    }
+    span.label {
+      font-weight: bold;
+    }
+    span.icon {
+      background: url('/+/images/branding/btn_red_32.png') transparent 5px 50% no-repeat;
+      display: inline-block;
+      vertical-align: middle;
+      width: 35px;
+      height: 35px;
+      border-right: #bb3f30 1px solid;
+    }
+    span.buttonText {
+      display: inline-block;
+      vertical-align: middle;
+      padding-left: 35px;
+      padding-right: 35px;
+      font-size: 14px;
+      font-weight: bold;
+      /* Use the Roboto font that is loaded in the <head> */
+      font-family: 'Roboto',arial,sans-serif;
+    }
+  </style>
+  <!-- In the callback, you would hide the gSignInWrapper element on a
+  successful sign in -->
+   <h2 style="color: white">Hey there!</h2>
+    <h3 style="color: white; margin-bottom: 4%"> Sign in and share all the images you can! </h3>
+
+  <div id="gSignInWrapper">
+    <div id="customBtn" class="customGPlusSignIn">
+      <span class="icon"></span>
+      <a style="text-decoration: none; color: white" href="{{ url|safe }}"><span class="buttonText">Google</span></a>
+    </div>
+  </div>
+   
  
     <!--<script src="https://apis.google.com/js/client.js?onload=init"></script>-->
 </div>

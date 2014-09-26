@@ -18,6 +18,7 @@ _routes = [
         #RedirectRoute('/sendmail<format:(.*)>', user.Mailer , name='search stream', strict_slash=True),
         RedirectRoute('/social<format:(.*)>', user.Social , name='search stream', strict_slash=True),
         RedirectRoute('/trending<format:(.*)>', user.Trending , name='trending stream', strict_slash=True),
+        RedirectRoute('/update-rate<format:(.*)>', user.UpdateNotificationRate , name='trending stream', strict_slash=True),
         RedirectRoute('/stream/delete', user.DeleteStream , name='search stream', strict_slash=True)
 ]
 

@@ -12,12 +12,14 @@ from google.appengine.api import users
 from google.appengine.api import images
 from google.appengine.api import memcache
 from google.appengine.api import mail
+import random
+
 from settings import JINJA_ENVIRONMENT
 
 DEFAULT_IMAGES = [
-                    "https://docs.google.com/file/d/0ByjZS11ljx0gUmpmSUJvRUJRV0E/preview",
-                    "https://docs.google.com/file/d/0ByjZS11ljx0gUmpmSUJvRUJRV0E/preview"
-                    ]
+        "https://docs.google.com/file/d/0ByjZS11ljx0gUmpmSUJvRUJRV0E/preview",
+        "https://docs.google.com/file/d/0ByjZS11ljx0gUmpmSUJvRUJRV0E/preview"
+        ]
 
 # /manage
 class Manage(webapp2.RequestHandler):
@@ -57,7 +59,9 @@ class DeleteStream(webapp2.RequestHandler):
                 list_of_streams = models.Stream.get_by_id(streams);
 
                 for stream in list_of_streams:
+                    db.delete(models.View.all(keys_only=True).filter("stream =", stream).fetch(1000))
                     db.delete(stream.key())
+
                 self.response.out.write(json.dumps({"status" : "OK", "result" : "delete successful"}))
 
             self.response.out.write(json.dumps({"status": "ERROR", "reason" : "Streams not found"}))
@@ -103,9 +107,9 @@ class Uploader(webapp2.RequestHandler):
         <input type="submit"
         name="submit" value="Submit"></form></body></html>""")
 
-    def post(self):
-        if not users.get_current_user():
-            self.redirect("/")
+        def post(self):
+            if not users.get_current_user():
+                self.redirect("/")
 
         if self.request.get('stream_id'):
             stream = models.Stream.get_by_id(int(self.request.get('stream_id')))
@@ -158,13 +162,13 @@ class Create(webapp2.RequestHandler):
 
             if self.request.get("name"):
                 stream, result = models.Stream.create_user_stream(self.request.get("name"),
-                                            user,
-                                            self.request.get("cover_image", DEFAULT_IMAGES[0]),
-                                            self.request.get("tags", ""))
+                        user,
+                        self.request.get("cover_image", DEFAULT_IMAGES[0]),
+                        self.request.get("tags", ""))
 
-            if stream:
-                if self.request.get('addsub'):
-                    email_ids = self.request.get('addsub').split(',')
+                if stream:
+                    if self.request.get('addsub'):
+                        email_ids = self.request.get('addsub').split(',')
                     models.Mailer.sendMail(email_ids, "subscribe")
 
                 if 'json' in format:
@@ -229,6 +233,9 @@ class ViewAll(webapp2.RequestHandler):
             url = users.create_logout_url(self.request.uri)
             template_values = {'user' : users.get_current_user(), 'url' : url}
             template_values['user_streams'] = user_streams
+            r = lambda: random.randint(0,255)
+            #["83BAE8", "E3DB18", "057351", "8F354D", "941F23", "1C6D76"]
+            template_values['random_colors'] =  [('%02X%02XF0' % (r(),r())) for i in xrange(0,30)]
 
             if format.find('json') > 0:
                 self.response.headers.add_header("Content-Type", "application/json")
@@ -254,10 +261,10 @@ class MainPage(webapp2.RequestHandler):
             template = JINJA_ENVIRONMENT.get_template('templates/login.html')
 
         template_values = {
-            'url': url,
-            'url_linktext': url_linktext,
-            'user' : users.get_current_user()
-        }
+                'url': url,
+                'url_linktext': url_linktext,
+                'user' : users.get_current_user()
+                }
 
         self.response.write(template.render(template_values))
 
@@ -313,6 +320,7 @@ class Search(webapp2.RequestHandler):
     def get(self, format):
         if not users.get_current_user():
             self.redirect("/")
+            return
         user = models.User.get_user(users.get_current_user().user_id())
         url = users.create_logout_url(self.request.uri)
         template_values = {'user' : users.get_current_user(), 'url' : url}
@@ -332,7 +340,6 @@ class Search(webapp2.RequestHandler):
         streams = models.Search.find_by_keyword(self.request.get('name'));
 
         self.response.write(json.dumps({"status" : "OK", "result" : streams}))
-
 """
 class Mailer(webapp2.RequestHandler):
     def get(self, format):
@@ -370,6 +377,10 @@ class Trending(webapp2.RequestHandler):
         template_values = {'user' : users.get_current_user(), 'url' : url}
         streams = models.TrendSetter.topTrending()
         template_values['user_streams'] = streams
+        r = lambda: random.randint(0,255)
+        #["83BAE8", "E3DB18", "057351", "8F354D", "941F23", "1C6D76"]
+        template_values['random_colors'] =  [('%02X%02XF0' % (r(),r())) for i in xrange(0,30)]
+
         if format.find('json') > 0:
             self.response.headers.add_header("Content-Type", "application/json")
             # may be send latest
@@ -380,3 +391,6 @@ class Trending(webapp2.RequestHandler):
             self.response.write(template.render(template_values))
 
 
+class UpdateNotificationRate(webapp2.RequestHandler):
+    def post(self, format):
+        pass

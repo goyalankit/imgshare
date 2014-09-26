@@ -1,17 +1,24 @@
 {% include 'templates/header.html' %}
+<style>
+body {
+background: url('/images/pattern.jpg');
+}
+
+#heythere {
+  background-color: black;
+  color: white;
+  display: block;
+  width: 15%;
+}
+</style>
 <div class="container">
-
     <output id="outputLog"></output>
-
-    <h2>Hey there!</h2>
-
-    <h3> Your Recent Images</h3>
-
-    <!--form onsubmit="return false">
-        <div><label for="id">Gmail UserId:</label><input id="id" /></div>
-        <div><input id="getGreeting" type="submit" class="btn btn-small" value="Submit"></div>
-    </form--!>
-
+    <div id="heythere">
+    <h2 style="margin: 9px; padding-bottom: 9px; padding-top: 5px;">Hey there!</h2>
+    </div>
+    <div id="heythere" style="width: 35%">
+    <h3 id="shareall" style="margin: 9px; padding-bottom: 9px; padding-top: 5px;"> Share all the images you can! </h3>
+    </div>
 </div>
 </body>
 </html>

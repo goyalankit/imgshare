@@ -5,50 +5,77 @@
 
 <div class="container">
 
-    <output id="outputLog"></output>
+  <output id="outputLog"></output>
 
-    <form id="formID" enctype='application/json' method="post">
-      <fieldset>
-        <legend>Create New Stream</legend>
-        <label>Name your stream *</label>
-        <input type="text" name="name" required placeholder="my awesome stream"><br/>
-        <label>Add subscribers</label>
-        <textarea rows="3" name="addsub"></textarea><br/>
-        <label>Tags</label>
-        <textarea rows="3" name="tags"></textarea><br/>
-        <label>Cover Image Url</label>
-        <input type="text" name="cover_image" placeholder="http://flickr.com/image.png"><br/>
-        <button type="submit" class="btn">Submit</button>
-      </fieldset>
-    </form>
+  <form id="formID" enctype='application/json' method="post"  class="form-horizontal">
+    <fieldset>
+      <legend>Create New Stream</legend>
+      <div class="form-group">
+        <label for="name" class="col-lg-2 control-label">Name your stream*</label>
+        <div class="col-lg-4">
+          <input type="text" class="form-control" name="name" required placeholder="my awesome stream"><br/>
+        </div>
+      </div>
+      <div class="form-group">
+        <label for="subscribers" class="col-lg-2 control-label">Add Subscribers</label>
+        <div class="col-lg-4">
+          <textarea rows="3" class="form-control" name="addsub"></textarea><br/>
+          <span class="help-block">An email will be sent to all the subscribers.</span>
+        </div>
+      </div>
+      <div class="form-group">
+        <label for="tags" class="col-lg-2 control-label">Tags</label>
+        <div class="col-lg-4">
+          <textarea class="form-control" name="tags" rows="3" id="textArea"></textarea>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="tags" class="col-lg-2 control-label">Cover Image Url</label>
+        <div class="col-lg-4">
+          <input type="text" name="cover_image" class="form-control" placeholder="http://flickr.com/image.png"><br/>
+        </div>
+      </div>
+      <div class="form-group">
+        <div class="col-lg-10 col-lg-offset-2">
+          <button class="btn btn-default">Cancel</button>
+          <button type="submit" class="btn btn-primary">Submit</button>
+        </div>
+      </div>
+    </fieldset>
+  </form>
 
 
-    <script>
+
+
+
+  <script>
+
 
 function ConvertFormToJSON(form){
-    var array = jQuery(form).serializeArray();
-    var json = {};
+  var array = jQuery(form).serializeArray();
+  var json = {};
 
-    jQuery.each(array, function() {
-        json[this.name] = this.value || '';
-    });
+  jQuery.each(array, function() {
+      json[this.name] = this.value || '';
+      });
 
-    return json;
+  return json;
 }
 
 /*$('#formID').on('submit',function () {
-    $.ajax({
-        url: '/create',
-        cache: false,
-        type: 'POST',
-        dataType: "json",
-        data : ConvertFormToJSON("#formID"),
-        success: function(json) {
-            alert('all done');
-        }
-    });
+  $.ajax({
+url: '/create',
+cache: false,
+type: 'POST',
+dataType: "json",
+data : ConvertFormToJSON("#formID"),
+success: function(json) {
+alert('all done');
+}
+});
 });*/
-</script>
+  </script>
 </div>
 </body>
 </html>

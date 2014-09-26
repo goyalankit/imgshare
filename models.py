@@ -94,11 +94,12 @@ class Stream(db.Model):
     @staticmethod
     def create_user_stream(name, user, cover_image, tags):
         stream = Stream.gql("WHERE name = '%s'" % name).get()
+        sane_tags = [t.strip() for t in tags.split(',')]
         if not stream:
             stream = Stream(owner=user,
                         name = name,
                         cover_image = cover_image,
-                        tags = tags.split(','), view_count=0)
+                        tags = sane_tags, view_count=0)
             stream.put()
         else:
             return None, "Stream already present"
@@ -138,7 +139,7 @@ class Search():
         all_stream = Stream.all()
         results = []
         for stream in all_stream:
-            if (keyword in stream.name) or (keyword in stream.tags):
+            if (keyword.strip() in stream.name) or (keyword.strip() in ' '.join(stream.tags)):
                 results.append(stream.__dict__())
         return results
 """
@@ -175,7 +176,7 @@ class View(db.Model):
         stream_count = {}
         views = View.all().filter('created_at >', View.seconds_ago(2*60*60))
         for view in views:
-            if view.stream.key().id() in stream_count:
+            if view.stream and (view.stream.key().id() in stream_count):
                 stream_count[view.stream.key().id()] += 1
             else:
                 stream_count[view.stream.key().id()] = 1

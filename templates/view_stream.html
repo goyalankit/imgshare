@@ -101,8 +101,8 @@
         <label><input type="file" name="file" size="60"></label><br>
         <input "type"="text" id="stream_id" name="stream_id" style="display:none;" value="{{stream.key().id()}}"/><br/>
 
-        <label>Comments: </label><input type="textarea" name="comments" placeholder="give me some sweet comments.."><br/><br/>
-        <button type="submit" class="btn">Submit</button>
+        <label>Comments: </label><input type="textarea" class="form-control" name="comments" placeholder="give me some sweet comments.."><br/>
+        <button type="submit" class="btn btn-info">Upload</button>
       </fieldset>
     </form>
 
@@ -110,9 +110,9 @@
     <div class="subscribe">
       {% if owner != True %}
         {% if subscribed == True %}
-          <a href="" id="unsubscribe" class="btn subunsub btn-primary">UnSubscribe</a><br/>
+        <a href="" id="unsubscribe" class="btn subunsub btn-primary">UnSubscribe</a><br/><br/>
         {% else %}
-          <a href="" id="subscribe" class="btn subunsub btn-primary">Subscribe</a><br/>
+        <a href="" id="subscribe" class="btn subunsub btn-primary">Subscribe</a><br/><br/>
         {% endif %}
       {% endif %}
       <!--div class="fb-share-button" data-width="155"></div-->

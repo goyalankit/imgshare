@@ -22,14 +22,30 @@ html, body, .container {
 	    font-size:50px;
 	    padding-top: 60px;
     }
+#searchquery {
+  display: block;
+}
+#searchbtn {
+  display: block;
+}
 </style>
 <link rel="stylesheet" href="/css/grid.css">
 <div class="container">
     <output id="outputLog"></output>
-    <div class="col-xs-4 col-xs-offset-4" id="virtualForm" style="margin-top: 3%;">
-        <input type="text" id="searchquery" class="search-query" placeholder="stream name">
-        <button type="submit" id="searchbtn" class="btn btn-primary">Submit</button>
-    </div>
+    <!--div class="col-xs-4" id="virtualForm" style="margin-top: 3%;">
+      <input type="text" id="searchquery" class="search-query form-control" placeholder="stream name">
+      <button type="submit" id="searchbtn" class="btn btn-primary">Submit</button>
+    </div-->
+
+    <div class="form-group">
+      <label class="control-label">Search</label>
+  <div class="input-group" id="virtualForm">
+    <span class="input-group-addon"><span class="glyphicon glyphicon-search"></span></span>
+    <input class="form-control" id="searchquery" type="text">
+    <span class="input-group-btn">
+      <button class="btn btn-default" id="searchbtn" type="button">Button</button>
+    </span>
+  </div>
 
     <div class="alert" id="searchresult" style="margin-top: 3%; display:none;">
        <button type="button" id="closebtn" class="close" data-dismiss="alert">&times;</button>
