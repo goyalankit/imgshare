@@ -29,6 +29,7 @@ class Manage(webapp2.RequestHandler):
                 self.error(401)
             else:
                 self.redirect("/")
+                return
         else:
             url = users.create_logout_url(self.request.uri)
             template_values = {'user' : users.get_current_user(), 'url' : url}
@@ -52,6 +53,7 @@ class DeleteStream(webapp2.RequestHandler):
     def post(self):
         if not users.get_current_user():
             self.redirect("/")
+            return
         else:
             if (self.request.get('stream_ids')):
                 streams = [int(stream) for stream in self.request.get('stream_ids').split(',')]
@@ -71,6 +73,7 @@ class UploadHandler(blobstore_handlers.BlobstoreUploadHandler):
     def post(self, format):
         if not users.get_current_user():
             self.redirect("/")
+            return
 
         if self.request.get('stream_id'):
             stream = models.Stream.get_by_id(int(self.request.get('stream_id')))
@@ -110,6 +113,7 @@ class Uploader(webapp2.RequestHandler):
         def post(self):
             if not users.get_current_user():
                 self.redirect("/")
+                return
 
         if self.request.get('stream_id'):
             stream = models.Stream.get_by_id(int(self.request.get('stream_id')))
@@ -145,6 +149,7 @@ class Create(webapp2.RequestHandler):
     def get(self, format):
         if not users.get_current_user():
             self.redirect("/")
+            return
         else:
             url = users.create_logout_url(self.request.uri)
             template = JINJA_ENVIRONMENT.get_template('templates/create.html')
@@ -154,6 +159,7 @@ class Create(webapp2.RequestHandler):
     def post(self, format):
         if not users.get_current_user():
             self.redirect("/")
+            return
         else:
             google_user = users.get_current_user()
             user = models.User.gql("WHERE google_id = :1", google_user.user_id()).get()
@@ -182,6 +188,7 @@ class View(webapp2.RequestHandler):
     def get(self, format):
         if not users.get_current_user():
             self.redirect("/")
+            return
         else:
             stream_id = self.request.get("id")
             if stream_id:
@@ -225,6 +232,7 @@ class ViewAll(webapp2.RequestHandler):
     def get(self, format):
         if not users.get_current_user():
             self.redirect("/")
+            return
         else:
             user = models.User.get_user(users.get_current_user().user_id())
             user_streams = {}
@@ -282,6 +290,7 @@ class Subscribe(webapp2.RequestHandler):
     def post(self, format):
         if not users.get_current_user():
             self.redirect("/")
+            return
         user = models.User.get_user(users.get_current_user().user_id())
 
         if not (self.request.get('stream_id')):
@@ -299,6 +308,7 @@ class UnSubscribe(webapp2.RequestHandler):
     def post(self, format):
         if not users.get_current_user():
             self.redirect("/")
+            return
         user = models.User.get_user(users.get_current_user().user_id())
 
         if not (self.request.get('stream_ids')):
@@ -370,9 +380,13 @@ class Social(webapp2.RequestHandler):
 
 class Trending(webapp2.RequestHandler):
     def get(self, format):
-        if not users.get_current_user():
+        current_user = users.get_current_user();
+
+        if not current_user:
             self.redirect("/")
-        user = models.User.get_user(users.get_current_user().user_id())
+            return
+
+        user = models.User.get_user(current_user.user_id())
         url = users.create_logout_url(self.request.uri)
         template_values = {'user' : users.get_current_user(), 'url' : url}
         streams = models.TrendSetter.topTrending()
