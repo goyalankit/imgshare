@@ -195,7 +195,7 @@ class TrendSetter(db.Model):
                 result[i]= { "stream" : stream.__dict__(), "one_hour_view_count" : stream_dict[streamid] }
                 i += 1
 
-        return dict(sorted(result.items(), key=lambda x: x[1]["one_hour_view_count"]))
+        return dict(sorted(result.items(), key=lambda x: x[1]["one_hour_view_count"], reverse=True))
 
 
     @staticmethod

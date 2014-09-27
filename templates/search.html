@@ -81,6 +81,9 @@ $(document).ready(function() {
 
 <script>
 
+
+
+
   /* hide the info bar on close */
   $("#closebtn").on("click", function(e){
     $("#searchresult").hide();
@@ -108,7 +111,7 @@ $(document).ready(function() {
         for(i=0; i<json.result.length; i++) {
           var url = json.result[i].url;
           var content = "<li class='canberemoved'><a href='./stream/view?id=" + json.result[i].id +"' style='text-decoration: none;'> ";
-					var img = "<img class='gl-img' src='"+ (json.result[i].cover_image || 'http://farm4.static.flickr.com/3882/15217941542_4473b99f02_b.jpg') +"' />";
+					var img = "<img class='gl-img' src='"+ (json.result[i].cover_image || ('http://placehold.it/1024x626/000000/ffffff/&text=' + json.result[i].name)) + "') />";
           var h3 = "<h3>"+json.result[i].name+"</h3>";
           var p = "<p> <b>Views: </b>"+ (json.result[i].view_count) +"</p></a></li>";
 

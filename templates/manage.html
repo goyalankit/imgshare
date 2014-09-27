@@ -87,8 +87,19 @@ function getUrlParameter(sParam)
 }
 
   var refresh = getUrlParameter('refresh');
+  var message = getUrlParameter('message');
   if (refresh == "true") {
-    window.location.href = "./manage";
+    window.location.href = "./manage?message="+message;
+  }
+
+  if (message == "success") {
+      $("#searchresult").addClass('alert-success');
+      $("#searchresult").show();
+      $("#searchresult h4").html("Stream created successfully!");
+  } else if (message == "fail") {
+      $("#searchresult").addClass('alert-danger');
+      $("#searchresult").show();
+      $("#searchresult h4").html("Stream not created. Try a different name!");
   }
 
   /* hide the info bar on close */

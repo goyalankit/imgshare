@@ -80,8 +80,14 @@ class UploadHandler(blobstore_handlers.BlobstoreUploadHandler):
 
         if not stream:
             self.response.out.write(json.dumps({"status" : "ERROR", "reason" : "No stream found"}))
+            return
 
         upload_files = self.get_uploads('file')  # 'file' is file upload field in the form
+
+        if not upload_files:
+            self.response.out.write(json.dumps({"status" : "ERROR", "reason" : "No image found"}))
+            return
+
         blob_info = upload_files[0]
 
         photo = models.Photo(title=self.request.get("title","untitled image"), blob_key = blob_info)
@@ -175,14 +181,21 @@ class Create(webapp2.RequestHandler):
                 if stream:
                     if self.request.get('addsub'):
                         email_ids = self.request.get('addsub').split(',')
-                    models.Mailer.sendMail(email_ids, "subscribe")
+                        models.Mailer.sendMail(email_ids, "subscribe")
 
-                if 'json' in format:
-                    self.response.out.write(json.dumps({"status" : "OK"}))
+                    if 'json' in format:
+                        self.response.out.write(json.dumps({"status" : "OK"}))
+                        return
+                    else:
+                        self.redirect('/manage?refresh=true&message=success')
+                        return
                 else:
-                    self.redirect('/manage?refresh=true')
-            else:
-                self.response.out.write(json.dumps({"status" : "ERROR", "result" : result}))
+                    if 'json' in format:
+                        self.response.out.write(json.dumps({"status" : "ERROR", "result" : result}))
+                        return
+                    else:
+                        self.redirect('/manage?refresh=true&message=fail')
+                        return
 
 class View(webapp2.RequestHandler):
     def get(self, format):
