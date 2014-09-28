@@ -245,7 +245,7 @@ class Mailer():
     @staticmethod
     def sendMail(ids, mailType):
         message = mail.EmailMessage(sender="ankit3goyal@gmail.com",
-                            subject="Your account has been approved")
+                            subject="Hi! from imgshare!")
 
         template = JINJA_ENVIRONMENT.get_template('templates/newsletter.html')
 
