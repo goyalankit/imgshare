@@ -139,8 +139,10 @@ class Search():
         all_stream = Stream.all()
         results = []
         for stream in all_stream:
-            if (keyword.strip() in stream.name) or (keyword.strip() in ' '.join(stream.tags)):
-                results.append(stream.__dict__())
+            for token in keyword.split(' '):
+                if (token.strip().lower() in stream.name.lower() or (token.strip().lower() in ' '.join(stream.tags).lower())):
+                    if stream.__dict__() not in results:
+                        results.append(stream.__dict__())
         return results
 """
 PHOTO
