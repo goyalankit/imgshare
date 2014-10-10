@@ -26,7 +26,7 @@ html, body, .container {
 #tags {
   display: block;
 }
-#searchbtn {
+#searchbtn, #reloadbtn{
   display: block;
 }
 
@@ -69,8 +69,12 @@ ul {
     <span class="input-group-btn">
       <button class="btn btn-default" id="searchbtn" type="button">Button</button>
     </span>
-  </div>
 
+    <button class="btn btn-info" id="reloadbtn" style="margin-left: 4px;" title="reload autocomplete cache" type="button">
+      <span class="glyphicon glyphicon-refresh"></span>
+    </button>
+
+  </div>
     <div class="alert" id="searchresult" style="margin-top: 3%; display:none;">
        <button type="button" id="closebtn" class="close" data-dismiss="alert">&times;</button>
        <h4></h4>
@@ -98,6 +102,7 @@ $(document).ready(function() {
 		$('.grid-nav li a').removeClass("active");
 		$(this).addClass("active");
 	});
+
 });
 </script>
 
@@ -105,28 +110,34 @@ $(document).ready(function() {
 
 <script>
 
-$importedTags = []
 
-$.get( "./data/auto.json", { "name" : name} , function( data ) {
-//  json = JSON.parse(data);
+function loadCache(reload){
+     $importedTags = []
 
-    if (data.result.length > 0) {
-    $importedTags = data.result;
-  }
+    $.get( "./autocomplete.json?reload="+reload, { "name" : name} , function( rec_data ) {
+      data = JSON.parse(rec_data);
+
+      if (data.result.length > 0) {
+      $importedTags = data.result;
+      }
+
+      var availableTags = [];
+      $( "#tags" ).autocomplete({
+        source: $importedTags.concat(availableTags)
+         });
+      });
+
+}
+//$(function() {
+$(document).ready(function() {
+  loadCache("noreload");
 });
 
 
-
-$(function() {
-    var availableTags = [
-    "UT Austin",
-    "India",
-    "Flags","Andy", "Andrew", "Bob", "Bobby", "Chuck", "Charles","David"
-      ];
-$( "#tags" ).autocomplete({
-    source: $importedTags.concat(availableTags)
-  });
-});
+	  $('#reloadbtn').on('click', function(event){
+		  event.preventDefault();
+      loadCache("reload");
+	  });
 
 
   /* hide the info bar on close */
@@ -173,6 +184,9 @@ $( "#tags" ).autocomplete({
     });
 
   });
+
+
+
 
 
   /*

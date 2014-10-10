@@ -10,3 +10,8 @@ cron:
 - description: email_sender_1_day
   url: /tasks?time=1day
   schedule: every day 12:30
+
+
+- description: autocomplete indexer
+  url: /tasks?autocompleteindexer=true
+  schedule: every day 12:30

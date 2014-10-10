@@ -429,12 +429,23 @@ class UpdateNotificationRate(webapp2.RequestHandler):
 
 class TaskExecutor(webapp2.RequestHandler):
     def get(self):
+        if self.request.get('autocompleteindexer'):
+            models.AutoCompleter.createAutoCompleteCache()
+
         if not (self.request.get('time')):
             return
+
+
         duration = self.request.get('time')
         models.CronHandler.runJob(duration)
         return
 
+class AutoCompleteHandler(webapp2.RequestHandler):
+    def get(self, format):
+        if (self.request.get("reload")) == "reload":
+            models.AutoCompleter.createAutoCompleteCache();
+        keywords = models.AutoCompleter.getAutoCompleteSuggestions()
+        self.response.out.write(json.dumps({"status" : "OK", "result" : keywords}))
 
 """
 class Mailer(webapp2.RequestHandler):

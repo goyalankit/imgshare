@@ -228,6 +228,23 @@ class Jobs(db.Model):
         else:
             Jobs(user=user, job_type=job_type, duration=duration).put()
 
+class AutoCompleter():
+    @staticmethod
+    def createAutoCompleteCache():
+        keywords = []
+        all_stream = Stream.all()
+        results = []
+        for stream in all_stream:
+            keywords.append(stream.name.lower())
+            keywords.extend(stream.tags)
+
+        keywords = [keyword for keyword in keywords if keyword]
+        memcache.set("autocomplete:index", keywords)
+
+    @staticmethod
+    def getAutoCompleteSuggestions():
+        return memcache.get("autocomplete:index")
+
 class CronHandler(db.Model):
     @staticmethod
     def initialize():
