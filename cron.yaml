@@ -14,4 +14,4 @@ cron:
 
 - description: autocomplete indexer
   url: /tasks?autocompleteindexer=true
-  schedule: every day 12:30
+  schedule: every 1 hours

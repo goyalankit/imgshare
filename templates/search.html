@@ -62,8 +62,8 @@ ul {
     </div-->
 
     <div class="form-group ui-widget">
-      <label class="control-label">Search</label>
-  <div class="input-group" id="virtualForm">
+      <label class="control-label" for="tags">Search</label>
+      <div class="input-group" id="virtualForm">
     <span class="input-group-addon"><span class="glyphicon glyphicon-search"></span></span>
     <input class="form-control" id="tags" type="text">
     <span class="input-group-btn">
@@ -73,6 +73,12 @@ ul {
     <button class="btn btn-info" id="reloadbtn" style="margin-left: 4px;" title="reload autocomplete cache" type="button">
       <span class="glyphicon glyphicon-refresh"></span>
     </button>
+
+
+<!--div class="ui-widget">
+<label for="birds">Birds: </label>
+<input id="birds">
+</div-->
 
   </div>
     <div class="alert" id="searchresult" style="margin-top: 3%; display:none;">
@@ -110,12 +116,32 @@ $(document).ready(function() {
 
 <script>
 
+$(function() {
+    var cache = {};
+    $( "#tags" ).autocomplete({
+    minLength: 2,
+    source: function( request, response ) {
+      var term = request.term;
+      if ( term in cache ) {
+        response( cache[ term ] );
+        return;
+      }
+
+    $.getJSON( "autocomplete.json", request, function( data, status, xhr ) {
+      cache[ term ] = data.result;
+      response( data.result );
+    });
+    }
+  });
+});
+
 
 function loadCache(reload){
      $importedTags = []
 
     $.get( "./autocomplete.json?reload="+reload, { "name" : name} , function( rec_data ) {
-      data = JSON.parse(rec_data);
+/*
+        data = JSON.parse(rec_data);
 
       if (data.result.length > 0) {
       $importedTags = data.result;
@@ -124,21 +150,20 @@ function loadCache(reload){
       var availableTags = [];
       $( "#tags" ).autocomplete({
         source: $importedTags.concat(availableTags)
-         });
+         });*/
       });
 
 }
 //$(function() {
-$(document).ready(function() {
+/*$(document).ready(function() {
   loadCache("noreload");
 });
+*/
 
-
-	  $('#reloadbtn').on('click', function(event){
-		  event.preventDefault();
-      loadCache("reload");
-	  });
-
+$('#reloadbtn').on('click', function(event){
+		event.preventDefault();
+    loadCache("reload");
+});
 
   /* hide the info bar on close */
   $("#closebtn").on("click", function(e){

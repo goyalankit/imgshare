@@ -1,0 +1,385 @@
+{% include 'templates/header.html' %}
+<link rel="stylesheet" href="/css/owl.carousel.css">
+<link rel="stylesheet" href="/css/owl.theme.css">
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+<script src="/js/owl.carousel.js"></script>
+
+
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<!-- Bootstrap styles -->
+<!-- Generic page styles -->
+<!--<link rel="stylesheet" href="css/style.css">-->
+<!-- blueimp Gallery styles -->
+<link rel="stylesheet" href="//blueimp.github.io/Gallery/css/blueimp-gallery.min.css">
+<!-- CSS to style the file input field as button and adjust the Bootstrap progress bars -->
+<link rel="stylesheet" href="/css/jquery.fileupload.css">
+<link rel="stylesheet" href="/css/jquery.fileupload-ui.css">
+<!-- CSS adjustments for browsers with JavaScript disabled -->
+<noscript><link rel="stylesheet" href="/css/jquery.fileupload-noscript.css"></noscript>
+<noscript><link rel="stylesheet" href="/css/jquery.fileupload-ui-noscript.css"></noscript>
+
+<style>
+    body {
+      background-color: white;
+    }
+    #owl-demo .item{
+      margin: 3px;
+    }
+    .owl-item {
+      text-align: center;
+    }
+    #owl-demo .item img{
+      display: block;
+      width: 100%;
+      height: auto;
+    }
+    #owl-demo {
+      width: 100%;
+      margin-left: 0%;
+      margin-right: 5%;
+      margin-top: 7%;
+    }
+    #loadmore {
+      display: block;
+      margin-left: 43%;
+      margin-top: 1%;
+      position: relative;
+    }
+    #main-box {
+      width: 60%;
+      float: left;
+      display: inline;
+    }
+
+    #info-box {
+      margin-top: 10%;
+    }
+    h1{
+	/* Using the custom font we've included in the HTML tab: */
+	    font-family: Satisfy, cursive;
+    	font-weight:bold;
+	    font-size:50px;
+	    padding-top: 60px;
+    }
+    ul#mylist {
+	    font-family: Satisfy, cursive;
+      color: grey;
+    	font-weight:bold;
+    	font-weight:dark;
+	    font-size:20px;
+      list-style-type: none;
+      margin-left: 5%;
+      margin-top: 10%;
+    }
+
+    .subscribe {
+      margin-top: 30%;
+    }
+</style>
+<div id="fb-root"></div>
+<script>(function(d, s, id) {
+  var js, fjs = d.getElementsByTagName(s)[0];
+  if (d.getElementById(id)) return;
+  js = d.createElement(s); js.id = id;
+  js.src = "//connect.facebook.net/en_US/sdk.js#xfbml=1&appId=712733642148337&version=v2.0";
+  fjs.parentNode.insertBefore(js, fjs);
+}(document, 'script', 'facebook-jssdk'));</script>
+
+<div class="container">
+
+    <output id="outputLog"></output>
+  <div id="main-box">
+    <div id="owl-demo" class="owl-carousel">
+      {% if not photos %}
+      <div style="margin-top: 15%;"><h2>No Photos Yet :(</h2></div>
+      {% endif %}
+      {% for photo in photos %}
+        <div class="lazyOwl"><img src="{{photo['url']}}" alt="Owl Image"></div> {% endfor %} </div>
+    <img style="display: none;" src="/images/default-share.png"> </img>
+      {% if photos %}
+    <div id="loadmore">
+      <a href="" class="btn add btn-primary">Load More</a>
+    </div>
+      {% endif %}
+  </div>
+    <div id="info-box" style="float: right">
+
+ <form id="fileupload" url="{{upload_url}}" method="POST" enctype="multipart/form-data">
+        <!-- Redirect browsers with JavaScript disabled to the origin page -->
+
+        <input "type"="text" id="stream_id" name="stream_id" style="display:none;" value="{{stream.key().id()}}"/><br/>
+        <noscript><input type="hidden" name="redirect" value="https://blueimp.github.io/jQuery-File-Upload/"></noscript>
+        <!-- The fileupload-buttonbar contains buttons to add/delete files and start/cancel the upload -->
+        <div class="row fileupload-buttonbar">
+            <div class="col-lg-7">
+                <!-- The fileinput-button span is used to style the file input field as button -->
+                <span class="btn btn-success fileinput-button">
+                    <i class="glyphicon glyphicon-plus"></i>
+                    <span>Add files...</span>
+                    <input type="file" name="files[]" multiple>
+                </span>
+                <button type="submit" class="btn btn-primary start">
+                    <i class="glyphicon glyphicon-upload"></i>
+                    <span>Start upload</span>
+                </button>
+                <button type="reset" class="btn btn-warning cancel">
+                    <i class="glyphicon glyphicon-ban-circle"></i>
+                    <span>Cancel upload</span>
+                </button>
+                <button type="button" class="btn btn-danger delete">
+                    <i class="glyphicon glyphicon-trash"></i>
+                    <span>Delete</span>
+                </button>
+                <input type="checkbox" class="toggle">
+                <!-- The global file processing state -->
+                <span class="fileupload-process"></span>
+            </div>
+            <!-- The global progress state -->
+            <div class="col-lg-5 fileupload-progress fade">
+                <!-- The global progress bar -->
+                <div class="progress progress-striped active" role="progressbar" aria-valuemin="0" aria-valuemax="100">
+                    <div class="progress-bar progress-bar-success" style="width:0%;"></div>
+                </div>
+                <!-- The extended global progress state -->
+                <div class="progress-extended">&nbsp;</div>
+            </div>
+        </div>
+        <!-- The table listing the files available for upload/download -->
+        <table role="presentation" class="table table-striped"><tbody class="files"></tbody></table>
+    </form>
+    <br>
+
+    <div class="subscribe">
+      {% if owner != True %}
+        {% if subscribed == True %}
+        <a href="" id="unsubscribe" class="btn subunsub btn-primary">UnSubscribe</a><br/><br/>
+        {% else %}
+        <a href="" id="subscribe" class="btn subunsub btn-primary">Subscribe</a><br/><br/>
+        {% endif %}
+      {% endif %}
+      <!--div class="fb-share-button" data-width="155"></div-->
+
+      <a href="" 
+  onclick="
+    window.open(
+      'https://www.facebook.com/sharer/sharer.php?u='+encodeURIComponent(location.href),
+      'fb-share-dialog',
+      'width=626,height=436');
+    return false;">
+    <img src="http://3.bp.blogspot.com/-z-S37TI53oA/Ucl54sj9V8I/AAAAAAAACXs/MsUCZ-XqQaE/s1600/facebook_share_button-4.png" />
+  </a>
+      </div>
+    </div>
+<script>
+/* Documentation: http://owlgraphic.com/owlcarousel/demos/manipulations.html */
+  var owl = $("#owl-demo"),
+  i = 0,
+
+  textholder,
+  booleanValue = false;
+
+  //init carousel
+    owl.owlCarousel({
+        lazyLoad : true,
+         autoPlay : 3000,
+        stopOnHover : true,
+      navigation:true,
+      paginationSpeed : 1000,
+      goToFirstSpeed : 2000,
+      rewindNav : true,
+      items : 2,
+       singleItem : true,
+      autoHeight : true
+    });
+
+  /*
+  addItem() method add new slides on given position
+
+  Syntax:
+  owldata.addItem(htmlString, targetPosition)
+
+  First parameter(mandatory) "htmlString" accept string like this:
+  var newItem = "<div>new Item</div>"
+  Second parameter "targetPosition" is optional and accept number values.
+  To add item at the end of carousel you could use -1 value. Last item is default value.
+  */
+  $('.subunsub').on("click", function(e){
+    e.preventDefault();
+    var subText = $(this).attr('id');
+    var stream_id = $("#stream_id").val()
+    if (subText == "subscribe") {
+      $.post( "./subscribe.json", { "stream_id" : stream_id} , function( data ) {
+        json = JSON.parse(data);
+        if (json.status == "OK") {
+          $('legend span').remove();
+          $('legend').append('<span class="label label-warning">subscribed</span>');
+          $('.subscribe a.subunsub').attr('id', 'unsubscribe');
+          $('.subscribe a.subunsub').text("UnSubscribe");
+        }
+      });
+    } else {
+      $.post( "./unsubscribe.json", { "stream_ids" : stream_id} , function( data ) {
+        json = JSON.parse(data);
+        if (json.status == "OK") {
+          $('legend span').remove();
+          $('legend').append('<span class="label label-warning">not subscribed</span>');
+          $('.subscribe a.subunsub').attr('id', 'subscribe');
+          $('.subscribe a.subunsub').text("Subscribe");
+        }
+      });
+    }
+  });
+
+  $('.add').on("click", function(e){
+    e.preventDefault();
+    var stream_id = $("#stream_id").val()
+    $.get( "./view.json", { "get_more" : "true", "id" : stream_id} , function( data ) {
+      json = JSON.parse(data);
+      if (json.result.length == 0) { alert("No more images.."); }
+      for(i=0; i<json.result.length; i++) {
+        var url = json.result[i].url;
+        var content = "<div class=\"lazyowl\"><img src="+ url +" alt=\"Owl Image\"></div>";
+        owl.data('owlCarousel').addItem(content);
+      }
+    });
+  });
+
+
+function getUrlParameter(sParam)
+{
+    var sPageURL = window.location.search.substring(1);
+    var sURLVariables = sPageURL.split('&');
+    for (var i = 0; i < sURLVariables.length; i++)
+    {
+        var sParameterName = sURLVariables[i].split('=');
+        if (sParameterName[0] == sParam)
+        {
+            return sParameterName[1];
+        }
+    }
+}
+
+var refresh = getUrlParameter('upload');
+if (refresh == "successful") {
+  var stream_id = $("#stream_id").val();
+  window.location.href = "./view?id="+stream_id;
+}
+</script>
+
+{% raw %}
+<script id="template-upload" type="text/x-tmpl">
+{% for (var i=0, file; file=o.files[i]; i++) { %}
+    <tr class="template-upload fade">
+        <td>
+            <span class="preview"></span>
+        </td>
+        <td>
+            <p class="name">{%=file.name%}</p>
+            <strong class="error text-danger"></strong>
+        </td>
+        <td>
+            <p class="size">Processing...</p>
+            <div class="progress progress-striped active" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><div class="progress-bar progress-bar-success" style="width:0%;"></div></div>
+        </td>
+        <td>
+            {% if (!i && !o.options.autoUpload) { %}
+                <button class="btn btn-primary start" disabled>
+                    <i class="glyphicon glyphicon-upload"></i>
+                    <span>Start</span>
+                </button>
+            {% } %}
+            {% if (!i) { %}
+                <button class="btn btn-warning cancel">
+                    <i class="glyphicon glyphicon-ban-circle"></i>
+                    <span>Cancel</span>
+                </button>
+            {% } %}
+        </td>
+    </tr>
+{% } %}
+</script>
+<!-- The template to display files available for download -->
+<script id="template-download" type="text/x-tmpl">
+{% for (var i=0, file; file=o.files[i]; i++) { %}
+    <tr class="template-download fade">
+        <td>
+            <span class="preview">
+                {% if (file.thumbnailUrl) { %}
+                    <a href="{%=file.url%}" title="{%=file.name%}" download="{%=file.name%}" data-gallery><img src="{%=file.thumbnailUrl%}"></a>
+                {% } %}
+            </span>
+        </td>
+        <td>
+            <p class="name">
+                {% if (file.url) { %}
+                    <a href="{%=file.url%}" title="{%=file.name%}" download="{%=file.name%}" {%=file.thumbnailUrl?'data-gallery':''%}>{%=file.name%}</a>
+                {% } else { %}
+                    <span>{%=file.name%}</span>
+                {% } %}
+            </p>
+            {% if (file.error) { %}
+                <div><span class="label label-danger">Error</span> {%=file.error%}</div>
+            {% } %}
+        </td>
+        <td>
+            <span class="size">{%=o.formatFileSize(file.size)%}</span>
+        </td>
+        <td>
+            {% if (file.deleteUrl) { %}
+                <button class="btn btn-danger delete" data-type="{%=file.deleteType%}" data-url="{%=file.deleteUrl%}"{% if (file.deleteWithCredentials) { %} data-xhr-fields='{"withCredentials":true}'{% } %}>
+                    <i class="glyphicon glyphicon-trash"></i>
+                    <span>Delete</span>
+                </button>
+                <input type="checkbox" name="delete" value="1" class="toggle">
+            {% } else { %}
+                <button class="btn btn-warning cancel">
+                    <i class="glyphicon glyphicon-ban-circle"></i>
+                    <span>Cancel</span>
+                </button>
+            {% } %}
+        </td>
+    </tr>
+{% } %}
+</script>
+{% endraw %}
+<script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+<!-- The jQuery UI widget factory, can be omitted if jQuery UI is already included -->
+<script src="/js/vendor/jquery.ui.widget.js"></script>
+<!-- The Templates plugin is included to render the upload/download listings -->
+<script src="//blueimp.github.io/JavaScript-Templates/js/tmpl.min.js"></script>
+<!-- The Load Image plugin is included for the preview images and image resizing functionality -->
+<script src="//blueimp.github.io/JavaScript-Load-Image/js/load-image.all.min.js"></script>
+<!-- The Canvas to Blob plugin is included for image resizing functionality -->
+<script src="//blueimp.github.io/JavaScript-Canvas-to-Blob/js/canvas-to-blob.min.js"></script>
+<!-- Bootstrap JS is not required, but included for the responsive demo navigation -->
+<!-- blueimp Gallery script -->
+<script src="//blueimp.github.io/Gallery/js/jquery.blueimp-gallery.min.js"></script>
+<!-- The Iframe Transport is required for browsers without support for XHR file uploads -->
+<script src="/js/jquery.iframe-transport.js"></script>
+<!-- The basic File Upload plugin -->
+<script src="/js/jquery.fileupload.js"></script>
+<!-- The File Upload processing plugin -->
+<script src="/js/jquery.fileupload-process.js"></script>
+<!-- The File Upload image preview & resize plugin -->
+<script src="/js/jquery.fileupload-image.js"></script>
+<!-- The File Upload audio preview plugin -->
+<script src="/js/jquery.fileupload-audio.js"></script>
+<!-- The File Upload video preview plugin -->
+<script src="/js/jquery.fileupload-video.js"></script>
+<!-- The File Upload validation plugin -->
+<script src="/js/jquery.fileupload-validate.js"></script>
+<!-- The File Upload user interface plugin -->
+<script src="/js/jquery.fileupload-ui.js"></script>
+<!-- The main application script -->
+<script src="/js/main.js"></script>
+<!-- The XDomainRequest Transport is included for cross-domain file deletion for IE 8 and IE 9 -->
+<!--[if (gte IE 8)&(lt IE 10)]>
+<script src="js/cors/jquery.xdr-transport.js"></script>
+<![endif]-->
+
+
+</div>
+</body>
+</html>
+

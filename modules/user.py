@@ -1,3 +1,4 @@
+from __future__ import with_statement
 from google.appengine.ext import db
 import jinja2
 import webapp2
@@ -13,6 +14,21 @@ from google.appengine.api import images
 from google.appengine.api import memcache
 from google.appengine.api import mail
 import random
+from google.appengine.api import files, images
+from google.appengine.ext import blobstore
+from google.appengine.ext.webapp import blobstore_handlers
+import json
+import re
+import urllib
+import webapp2
+MIN_FILE_SIZE = 1  # bytes
+MAX_FILE_SIZE = 5000000  # bytes
+IMAGE_TYPES = re.compile('image/(gif|p?jpeg|(x-)?png)')
+ACCEPT_FILE_TYPES = IMAGE_TYPES
+THUMBNAIL_MODIFICATOR = '=s80'  # max width / height
+EXPIRATION_TIME = 300  # seconds
+
+
 
 from settings import JINJA_ENVIRONMENT
 
@@ -68,13 +84,12 @@ class DeleteStream(webapp2.RequestHandler):
 
             self.response.out.write(json.dumps({"status": "ERROR", "reason" : "Streams not found"}))
 
-
-class UploadHandler(blobstore_handlers.BlobstoreUploadHandler):
+## DEFUNCT NOW
+class UploadHandler2(blobstore_handlers.BlobstoreUploadHandler):
     def post(self, format):
         if not users.get_current_user():
             self.redirect("/")
             return
-
         if self.request.get('stream_id'):
             stream = models.Stream.get_by_id(int(self.request.get('stream_id')))
 
@@ -227,7 +242,7 @@ class View(webapp2.RequestHandler):
                 template_values = {'user' : users.get_current_user(), 'url' : url}
                 template_values['photos'] = photos
                 template_values['stream'] = stream
-                template_values['upload_url'] = blobstore.create_upload_url('/upload')
+                template_values['upload_url'] = '/upload/' #blobstore.create_upload_url('/upload')
                 template_values['owner'] = stream.owner.google_id == user.google_id
                 template_values['subscribed'] = [True for st in models.Stream.get_all_subscribed_streams(user) if stream.key().id() == st['id']] != []
                 template_values['upload'] = self.request.get("upload",'')
@@ -236,7 +251,7 @@ class View(webapp2.RequestHandler):
                     self.response.headers.add_header("Content-Type", "application/json")
                     self.response.out.write(json.dumps({"status" : "OK", "result" : photos }))
                 else:
-                    template = JINJA_ENVIRONMENT.get_template('templates/view_stream.html')
+                    template = JINJA_ENVIRONMENT.get_template('templates/view_stream_adv.html')
                     self.response.write(template.render(template_values))
             else:
                 self.response.out.write(json.dumps({"status" : "ERROR", "reason" : "No Stream Found" }))
@@ -295,8 +310,20 @@ class Ping(webapp2.RequestHandler):
         if not users.get_current_user():
             self.redirect("/")
 
-        stream = models.Stream.get_by_id(int(self.request.get("stream_id")))
-        images = stream.get_images()
+        # stream = models.Stream.get_by_id(int(self.request.get("stream_id")))
+        # images = stream.get_images()
+        upload_url = blobstore.create_upload_url('/upload.html')
+        template = JINJA_ENVIRONMENT.get_template('templates/sample_uploader.html')
+        url = users.create_login_url(self.request.uri)
+
+        template_values = {
+                'url': url,
+                'user' : users.get_current_user(),
+                 'upload_url' : upload_url
+                }
+
+        self.response.write(template.render(template_values))
+
 
 
 class Subscribe(webapp2.RequestHandler):
@@ -444,20 +471,157 @@ class AutoCompleteHandler(webapp2.RequestHandler):
     def get(self, format):
         if (self.request.get("reload")) == "reload":
             models.AutoCompleter.createAutoCompleteCache();
-        keywords = models.AutoCompleter.getAutoCompleteSuggestions()
+        term = self.request.get("term")
+        keywords = models.AutoCompleter.getAutoCompleteSuggestions(term)
+        # record = lambda x: { "id" : x, "label" : x, "value": x }
+        # result = [record(keyword) for keyword in keywords]
+        # import pdb; pdb.set_trace()
         self.response.out.write(json.dumps({"status" : "OK", "result" : keywords}))
 
-"""
-class Mailer(webapp2.RequestHandler):
-    def get(self, format):
-        message = mail.EmailMessage(sender="ankit3goyal@gmail.com",
-                            subject="Your account has been approved")
 
-        message.to = "me@goyalankit.com"
-        template = JINJA_ENVIRONMENT.get_template('templates/newsletter.html')
-        template_values = {}
-        message.html = template.render(template_values)
+def cleanup(blob_keys):
+    blobstore.delete(blob_keys)
 
-        message.send()
-"""
+
+class UploadHandler(webapp2.RequestHandler):
+
+    def initialize(self, request, response):
+        super(UploadHandler, self).initialize(request, response)
+        self.response.headers['Access-Control-Allow-Origin'] = '*'
+        self.response.headers[
+            'Access-Control-Allow-Methods'
+        ] = 'OPTIONS, HEAD, GET, POST, PUT, DELETE'
+        self.response.headers[
+            'Access-Control-Allow-Headers'
+        ] = 'Content-Type, Content-Range, Content-Disposition'
+
+    def validate(self, file):
+        if file['size'] < MIN_FILE_SIZE:
+            file['error'] = 'File is too small'
+        elif file['size'] > MAX_FILE_SIZE:
+            file['error'] = 'File is too big'
+        elif not ACCEPT_FILE_TYPES.match(file['type']):
+            file['error'] = 'Filetype not allowed'
+        else:
+            return True
+        return False
+
+    def get_file_size(self, file):
+        file.seek(0, 2)  # Seek to the end of the file
+        size = file.tell()  # Get the position of EOF
+        file.seek(0)  # Reset the file position to the beginning
+        return size
+
+    def write_blob(self, data, info):
+        blob = files.blobstore.create(
+            mime_type=info['type'],
+            _blobinfo_uploaded_filename=info['name']
+        )
+        with files.open(blob, 'a') as f:
+            f.write(data)
+        files.finalize(blob)
+        return files.blobstore.get_blob_key(blob)
+
+    def handle_upload(self):
+        results = []
+        blob_keys = []
+
+        if self.request.get('stream_id'):
+            stream = models.Stream.get_by_id(int(self.request.get('stream_id')))
+
+        if not stream:
+            self.response.out.write(json.dumps({"status" : "ERROR", "reason" : "No stream found"}))
+            return
+
+        for name, fieldStorage in self.request.POST.items():
+            if type(fieldStorage) is unicode:
+                continue
+            result = {}
+            result['name'] = re.sub(
+                r'^.*\\',
+                '',
+                fieldStorage.filename
+            )
+            result['type'] = fieldStorage.type
+            result['size'] = self.get_file_size(fieldStorage.file)
+            if self.validate(result):
+                blob_key = str(
+                    self.write_blob(fieldStorage.value, result)
+                )
+
+                photo = models.Photo(title=self.request.get("title","untitled image"), blob_key = blob_key)
+                photo.stream = stream
+                photo.comments = self.request.get("comments","")
+                photo.put()
+                blob_keys.append(blob_key)
+                result['deleteType'] = 'DELETE'
+                result['deleteUrl'] = self.request.host_url +\
+                    '/upload/?key=' + urllib.quote(blob_key, '')
+                if (IMAGE_TYPES.match(result['type'])):
+                    try:
+                        result['url'] = images.get_serving_url(
+                            blob_key,
+                            secure_url=self.request.host_url.startswith(
+                                'https'
+                            )
+                        )
+                        result['thumbnailUrl'] = result['url'] +\
+                            THUMBNAIL_MODIFICATOR
+                    except:  # Could not get an image serving url
+                        pass
+                if not 'url' in result:
+                    result['url'] = self.request.host_url +\
+                        '/' + blob_key + '/' + urllib.quote(
+                            result['name'].encode('utf-8'), '')
+            results.append(result)
+        #deferred.defer(
+        #    cleanup,
+        #    blob_keys,
+        #    _countdown=EXPIRATION_TIME
+        #)
+        return results
+
+    def options(self):
+        pass
+
+    def head(self):
+        pass
+
+    def post(self):
+        if (self.request.get('_method') == 'DELETE'):
+            return self.delete()
+        result = {'files': self.handle_upload()}
+        s = json.dumps(result, separators=(',', ':'))
+        redirect = self.request.get('redirect')
+        if redirect:
+            return self.redirect(str(
+                redirect.replace('%s', urllib.quote(s, ''), 1)
+            ))
+        if 'application/json' in self.request.headers.get('Accept'):
+            self.response.headers['Content-Type'] = 'application/json'
+        self.response.write(s)
+
+    def delete(self):
+        key = self.request.get('key') or ''
+        photo = models.Photo.gql('WHERE blob_key = :1', key).get()
+        photo.delete()
+        blobstore.delete(key)
+
+        s = json.dumps({key: True}, separators=(',', ':'))
+        if 'application/json' in self.request.headers.get('Accept'):
+            self.response.headers['Content-Type'] = 'application/json'
+        self.response.write(s)
+
+
+class DownloadHandler2(blobstore_handlers.BlobstoreDownloadHandler):
+    def get(self, key, filename):
+        if not blobstore.get(key):
+            self.error(404)
+        else:
+            # Prevent browsers from MIME-sniffing the content-type:
+            self.response.headers['X-Content-Type-Options'] = 'nosniff'
+            # Cache for the expiration time:
+            self.response.headers['Cache-Control'] = 'public,max-age=%d' % EXPIRATION_TIME
+            # Send the file forcing a download dialog:
+            self.send_blob(key, save_as=filename, content_type='application/octet-stream')
 

@@ -242,8 +242,13 @@ class AutoCompleter():
         memcache.set("autocomplete:index", keywords)
 
     @staticmethod
-    def getAutoCompleteSuggestions():
-        return memcache.get("autocomplete:index")
+    def getAutoCompleteSuggestions(term):
+        keywords = memcache.get("autocomplete:index") or []
+        result = []
+        for keyword in keywords:
+            if term in keyword:
+                result.append(keyword)
+        return sorted(result)
 
 class CronHandler(db.Model):
     @staticmethod
