@@ -21,7 +21,8 @@ _routes = [
         RedirectRoute('/update-rate<format:(.*)>', user.UpdateNotificationRate , name='trending stream', strict_slash=True),
         RedirectRoute('/stream/delete', user.DeleteStream , name='search stream', strict_slash=True),
         RedirectRoute('/autocomplete<format:(.*)>', user.AutoCompleteHandler , name='autocomplete suggessions', strict_slash=True),
-        RedirectRoute('/tasks', user.TaskExecutor , name='search stream', strict_slash=True)
+        RedirectRoute('/tasks', user.TaskExecutor , name='search stream', strict_slash=True),
+        RedirectRoute('/stream/geoview<format:(.*)>', user.GeoHandler , name='search stream', strict_slash=True)
 
 ]
 

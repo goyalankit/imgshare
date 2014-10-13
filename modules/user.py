@@ -256,6 +256,35 @@ class View(webapp2.RequestHandler):
             else:
                 self.response.out.write(json.dumps({"status" : "ERROR", "reason" : "No Stream Found" }))
 
+
+class GeoHandler(webapp2.RequestHandler):
+    def get(self, format):
+        if not users.get_current_user():
+            self.redirect("/")
+            return
+        else:
+            stream_id = self.request.get("id")
+            if stream_id:
+                stream = models.Stream.get_by_id(long(stream_id))
+                if not stream:
+                    self.response.out.write(json.dumps({"status" : "ERROR", "reason" : "No Stream Found" }))
+
+
+                url = users.create_logout_url(self.request.uri)
+                template_values = {'user' : users.get_current_user(), 'url' : url}
+
+                if format.find('json') > 0:
+                    self.response.headers.add_header("Content-Type", "application/json")
+                    self.response.out.write(json.dumps({"status" : "OK", "result" : photos }))
+                else:
+                    template = JINJA_ENVIRONMENT.get_template('templates/geo_view.html')
+                    self.response.write(template.render(template_values))
+            else:
+                self.response.out.write(json.dumps({"status" : "ERROR", "reason" : "No Stream Found" }))
+
+
+
+
 class ViewAll(webapp2.RequestHandler):
     def get(self, format):
         if not users.get_current_user():

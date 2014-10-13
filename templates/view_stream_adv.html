@@ -50,6 +50,7 @@
       width: 60%;
       float: left;
       display: inline;
+      margin-left: -12%;
     }
 
     #info-box {
@@ -75,6 +76,20 @@
 
     .subscribe {
       margin-top: 30%;
+    }
+
+    hr {
+      color: black;
+border: darkblue;
+-moz-border-bottom-colors: none;
+-moz-border-image: none;
+-moz-border-left-colors: none;
+-moz-border-right-colors: none;
+-moz-border-top-colors: none;
+border-color: #000 -moz-use-text-color #FFF;
+border-style: solid none;
+border-width: 1px 0;
+margin: 18px 0;
     }
 </style>
 <div id="fb-root"></div>
@@ -104,15 +119,23 @@
       {% endif %}
   </div>
     <div id="info-box" style="float: right">
+ <legend>{{stream.name}}
+      {% if owner == True %}
+          <span class="label label-success">owned</span>
+      {% elif subscribed == True %}
+          <span class="label label-warning">subscribed</span>
+      {% endif %}
+      </legend>
 
- <form id="fileupload" url="{{upload_url}}" method="POST" enctype="multipart/form-data">
+      <hr/>
+    <form id="fileupload" url="{{upload_url}}" method="POST" enctype="multipart/form-data">
         <!-- Redirect browsers with JavaScript disabled to the origin page -->
 
         <input "type"="text" id="stream_id" name="stream_id" style="display:none;" value="{{stream.key().id()}}"/><br/>
         <noscript><input type="hidden" name="redirect" value="https://blueimp.github.io/jQuery-File-Upload/"></noscript>
         <!-- The fileupload-buttonbar contains buttons to add/delete files and start/cancel the upload -->
         <div class="row fileupload-buttonbar">
-            <div class="col-lg-7">
+            <div class="col-lg-13">
                 <!-- The fileinput-button span is used to style the file input field as button -->
                 <span class="btn btn-success fileinput-button">
                     <i class="glyphicon glyphicon-plus"></i>
@@ -148,9 +171,23 @@
         <!-- The table listing the files available for upload/download -->
         <table role="presentation" class="table table-striped"><tbody class="files"></tbody></table>
     </form>
+
+     <span  class="btn btn-primary fileinput-button" id="reloadbtn" onClick="document.location.reload(true)">
+       <i class="glyphicon glyphicon-ok"></i>
+       <span>Done</span>
+       <input type="button" >
+     </span>
     <br>
 
     <div class="subscribe">
+         <a href="geoview?id={{stream.key().id()}}">
+     <span  class="btn btn-success fileinput-button" id="geoview">
+       <i class="glyphicon glyphicon-map-marker"></i>
+       <span>Geo View</span>
+         <input type="submit" value="">
+     </span>
+     </a>
+
       {% if owner != True %}
         {% if subscribed == True %}
         <a href="" id="unsubscribe" class="btn subunsub btn-primary">UnSubscribe</a><br/><br/>
@@ -192,6 +229,8 @@
        singleItem : true,
       autoHeight : true
     });
+
+$("#reloadbtn").hide();
 
   /*
   addItem() method add new slides on given position
@@ -298,6 +337,8 @@ if (refresh == "successful") {
         </td>
     </tr>
 {% } %}
+
+
 </script>
 <!-- The template to display files available for download -->
 <script id="template-download" type="text/x-tmpl">
@@ -327,6 +368,7 @@ if (refresh == "successful") {
         </td>
         <td>
             {% if (file.deleteUrl) { %}
+            {% $("#reloadbtn").show(); %}
                 <button class="btn btn-danger delete" data-type="{%=file.deleteType%}" data-url="{%=file.deleteUrl%}"{% if (file.deleteWithCredentials) { %} data-xhr-fields='{"withCredentials":true}'{% } %}>
                     <i class="glyphicon glyphicon-trash"></i>
                     <span>Delete</span>
