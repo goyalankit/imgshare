@@ -229,7 +229,9 @@ class View(webapp2.RequestHandler):
 
                 user = models.User.get_user(users.get_current_user().user_id())
 
-                if get_more:
+                if self.request.get("useCursor") == "false":
+                    stream_photos = stream.get_images(limit=None, useCursor=False, user=user)
+                elif get_more:
                     stream_photos = stream.get_images(limit=3, useCursor=True, user=user)
                 else:
                     stream_photos = stream.get_images(limit=3, useCursor=True, user=user, resetCursor=True)
@@ -271,7 +273,11 @@ class GeoHandler(webapp2.RequestHandler):
 
 
                 url = users.create_logout_url(self.request.uri)
-                template_values = {'user' : users.get_current_user(), 'url' : url}
+                template_values = {
+                                    'user' : users.get_current_user(),
+                                   'url' : url,
+                                   'stream_id' : stream_id
+                                   }
 
                 if format.find('json') > 0:
                     self.response.headers.add_header("Content-Type", "application/json")
@@ -281,9 +287,6 @@ class GeoHandler(webapp2.RequestHandler):
                     self.response.write(template.render(template_values))
             else:
                 self.response.out.write(json.dumps({"status" : "ERROR", "reason" : "No Stream Found" }))
-
-
-
 
 class ViewAll(webapp2.RequestHandler):
     def get(self, format):

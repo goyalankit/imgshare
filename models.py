@@ -8,6 +8,7 @@ from settings import JINJA_ENVIRONMENT
 import datetime
 import json
 import operator
+import random
 
 class User(db.Model):
     subscriptions = db.ListProperty(db.Key)
@@ -152,6 +153,8 @@ class Photo(db.Model):
     title = db.StringProperty("title")
     stream = db.ReferenceProperty(Stream, collection_name="images")
     blob_key = blobstore.BlobReferenceProperty()
+    location = db.GeoPtProperty()
+    created_at = db.DateTimeProperty(auto_now_add=True)
 
     def __dict__(self, resize=None):
         if resize:
@@ -160,7 +163,9 @@ class Photo(db.Model):
                 "id" : self.key().id(),
                 "url" : images.get_serving_url(self.blob_key),
                 "comments" : self.comments,
-                "stream_id" : self.stream.key().id()
+                "stream_id" : self.stream.key().id(),
+                "location" : self.location or (random.random()*180 - 90, random.random()*360 - 180),
+                "created_at" :  self.created_at.strftime("%Y-%m-%d")
                 }
 
 
