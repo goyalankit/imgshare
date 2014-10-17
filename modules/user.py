@@ -504,7 +504,7 @@ class AutoCompleteHandler(webapp2.RequestHandler):
         if (self.request.get("reload")) == "reload":
             models.AutoCompleter.createAutoCompleteCache();
         term = self.request.get("term")
-        keywords = models.AutoCompleter.getAutoCompleteSuggestions(term)
+        keywords = models.AutoCompleter.getAutoCompleteSuggestions(term.lower())
         # record = lambda x: { "id" : x, "label" : x, "value": x }
         # result = [record(keyword) for keyword in keywords]
         # import pdb; pdb.set_trace()
